@@ -1,0 +1,6 @@
+# MANIFEST.in
+include README.md
+include config.ini
+include environment.yml
+recursive-include GalSpecFitX *
+prune GalSpecFitX/__pycache__

@@ -1,0 +1,2 @@
+[console_scripts]
+galspecfitx = GalSpecFitX.__main__:main
