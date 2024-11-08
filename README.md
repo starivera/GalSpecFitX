@@ -9,7 +9,7 @@ This software applies the Penalized PiXel-Fitting method (pPXF) created and dist
 3. To download all the available libraries run: ```git lfs pull```
 5. Open the GalSpecFitX root directory in your terminal and run ```pip install .``` You should now be able to run the software by calling ```galspecfitx``` from the command line.
 6. Create a directory for your galaxy data and copy over the 'config.ini' file from the GalSpecFitX directory.
-7. You can use this configuration file as a template and adjust the parameters accordingly (see the Configuration File Parameters and Recommended Parameters sections below).
+7. You can use this configuration file as a template and adjust the parameters accordingly (see the Configuration File Parameters and Spectral Fitting Parameters - Recommended sections below).
 8. Command line options:
    ```
    galspecfitx [--options]
