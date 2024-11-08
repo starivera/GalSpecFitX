@@ -8,8 +8,8 @@ This software applies the Penalized PiXel-Fitting method (pPXF) created and dist
 2. Install the required packages and dependencies (listed in setup.py), or simply create a new Conda environment using the environment.yml file.
 3. To download all the available libraries run: ```git lfs pull```
 5. Open the GalSpecFitX root directory in your terminal and run ```pip install .``` You should now be able to run the software by calling ```galspecfitx``` from the command line.
-6. Create a directory for your galaxy data (in FITS file format) and copy the 'config.ini' file from the GalSpecFitX directory.
-7. You can use this configuration file as a template and adjust the parameters accordingly (see the Required and Recommended Parameters sections below).
+6. Create a directory for your galaxy data and copy over the 'config.ini' file from the GalSpecFitX directory.
+7. You can use this configuration file as a template and adjust the parameters accordingly (see the Configuration File Parameters and Recommended Parameters sections below).
 8. Command line options:
    ```
    galspecfitx [--options]
@@ -146,7 +146,7 @@ This section contains additional parameters for customizing the fitting process.
 
 ## Spectral Fitting Parameters - Recommended
 
-These fitting parameters tend to have the greatest influence on the quality of the fit:
+These are the parameters I recommend focusing on as they tend to have the greatest influence on the quality of the fit:
 
 - **start_stars**: Initial guess for the parameters (V, sigma) for the stars component.  
 - **start_gas**: Initial guess for the parameters (V, sigma) for the gas component.  
