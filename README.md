@@ -116,34 +116,35 @@ This section contains additional parameters for customizing the fitting process.
 |-----------------------|-----------------|---------------------------------------------------------------------------------------------------------------|
 | `start_stars`         | None/list       | Initial kinematic parameters (velocity and sigma required) for stars; defaults are used if set to None.       |
 | `start_gas`           | None/list       | Initial kinematic parameters (velocity and sigma required) for gas; defaults are used if set to None.         |
-| `bias`                | float           | Optional bias term to control fit sensitivity; default is None.                                               |
+| `bias`                | float           | Optional bias term to control fit sensitivity; default is None.*                                               |
 | `bounds`              | None/list       | Parameter bounds (e.g., min and max values) for fitting constraints; default is None.                         |
 | `clean`               | bool            | Enables outlier removal if True; default is False.                                                            |
-| `constr_templ`        | dict            | Constraints applied to templates during fitting; default is None.                                             |
-| `constr_kinem`        | dict            | Constraints on kinematic parameters (e.g., velocity); default is None.                                        |
+| `constr_templ`        | dict            | Constraints applied to templates during fitting; default is None.*                                             |
+| `constr_kinem`        | dict            | Constraints on kinematic parameters (e.g., velocity); default is None.*                                        |
 | `degree`              | int             | Degree of additive polynomial for continuum fitting; default is 4.                                            |
 | `dust_gas`            | None/dict       | Dust attenuation parameters for gas; default is None. {"start":..., "bounds":..., "fixed":...}                |
 | `dust_stars`          | None/dict       | Dust attenuation parameters for stars; default is None. {"start":..., "bounds":..., "fixed":...}              |
 | `fixed`               | None/list       | Boolean vector set to ``True`` where a given kinematic parameter has to be held fixed with the value given in ``start``. This is an array, or list, with the same dimensions as ``start``. |
-| `fraction`            | float           | Ratio between stars and gas component.                                                                        |
+| `fraction`            | float           | Ratio between stars and gas component.*                                                                        |
 | `ftol`                | float           | Tolerance level for fit convergence; default is 1e-4.                                                         |
-| `global_search`       | bool or dict    | Enables global optimization of the nonlinear parameters (kinematics) before starting the usual local optimizer.if True; default is False. |
+| `global_search`**     | bool or dict    | Enables global optimization of the nonlinear parameters (kinematics) before starting the usual local optimizer.if True; default is False. |
 | `linear`              | bool            | Uses linear fitting only if True; default is False.                                                           |
 | `linear_method`       | str             | Method for linear fitting (options vary based on pPXF settings); default is `lsq_box`.                        |
-| `mask`                | None/list       | List of wavelength ranges to exclude from fit; default is None.                                               |
+| `mask`                | None/list       | List of wavelength ranges to exclude from fit; default is None (e.g. [[lam_i1, lam_f1], [lami2, lamf2], ...]                                              |
 | `method`              | str             | Algorithm to perform the non-linear minimization step (options vary based on pPXF settings); default is `capfit`. |
 | `mdegree`             | int             | Degree of multiplicative polynomial for continuum fitting; default is 0.                                      |
-| `plot`                | bool            | Set this keyword to plot the best fitting solution and the residuals at the end of the fit; default is False. |
 | `quiet`               | bool            | Suppresses verbose output of the best fitting parameters at the end of the fit if True; default is False.     |
 | `rest_wavelengths`    | None/list       | Absorption line central wavelengths for milky way line masking; default is None.                              |
 | `sigma_diff`          | float           | Quadratic difference in km/s defined as: ```sigma_diff**2 = sigma_inst**2 - sigma_temp**2``` between the instrumental dispersion of the galaxy spectrum and the instrumental dispersion of the template spectra.                                                |
 | `trig`                | bool            | Enables trigonometric series as an alternative to Legendre polynomials, for both the additive and multiplicative polynomials if True; default is False. |
-| `vsyst`               | float           | Reference velocity in ``km/s``; default is 0.0.                                                             |
+| `vsyst`               | float           | Reference velocity in ``km/s``; default is 0.0. Output will be w.r.t. this velocity.                                                             |
 | `x0`                  | None            | Initialization for linear solution; default is None.                                                                 |
 
 
 ---
-
+* See pPXF documentation for further explanation.
+* * Computationally intensive
+  
 ## Spectral Fitting Parameters - Recommended
 
 These are the parameters I recommend focusing on as they tend to have the greatest influence on the quality of the fit:
