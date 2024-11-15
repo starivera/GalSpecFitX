@@ -166,15 +166,16 @@ class LibraryHandler(ABC):
 
 class StarburstLibraryHandler(LibraryHandler):
 
-    def __init__(self):
+    def __init__(self, lib_path: str):
         import starburst_util as lib  # Import the library only if using this handler
         self.lib = lib
+        self.lib_path = lib_path
 
     def retrieve_templates(self, velscale: float, age_range: List[float]) -> Tuple[np.ndarray, Tuple[int, ...], np.ndarray, np.ndarray]:
 
-        ppxf_dir = os.path.dirname(os.path.realpath(self.lib.__file__))
-        pathname = os.path.join(ppxf_dir, 'libraries', 'STARBURST99', self.star_form, self.IMF_slope, '*.fits')
-        starburst_lib = self.lib.starburst(pathname, velscale, age_range=age_range)
+        # ppxf_dir = os.path.dirname(os.path.realpath(self.lib.__file__))
+        pathname = os.path.join(self.lib_path, 'libraries', 'STARBURST99', self.star_form, self.IMF_slope, '*.fits')
+        starburst_lib = self.lib.starburst(pathname, velscale, self.lib_path, age_range=age_range)
 
         reg_dim = starburst_lib.templates.shape[1:]
         stars_templates = starburst_lib.templates.reshape(starburst_lib.templates.shape[0], -1)
@@ -188,7 +189,7 @@ class BPASSLibraryHandler(LibraryHandler):
     Handler for BPASS (Binary Population and Spectral Synthesis) stellar population models.
     """
 
-    def __init__(self, IMF_slope: str, star_form: str):
+    def __init__(self, IMF_slope: str, star_form: str, lib_path: str):
         """
         Initialize with specific BPASS parameters.
 
@@ -196,6 +197,7 @@ class BPASSLibraryHandler(LibraryHandler):
         """
         import GalSpecFitX.bpass_util as lib  # Import only if using this handler
         self.lib = lib
+        self.lib_path = lib_path
         self.IMF_slope = IMF_slope
         self.star_form = star_form
 
@@ -208,10 +210,10 @@ class BPASSLibraryHandler(LibraryHandler):
         :return: Tuple containing the stellar templates, regularization dimensions, template wavelengths,
                  and logarithm of template wavelengths.
         """
-        ppxf_dir = os.path.dirname(os.path.realpath(self.lib.__file__))
-        pathname = os.path.join(ppxf_dir, 'libraries', 'BPASS', self.star_form, self.IMF_slope, '*.fits')
+        # ppxf_dir = os.path.dirname(os.path.realpath(self.lib.__file__))
+        pathname = os.path.join(self.lib_path, 'libraries', 'BPASS', self.star_form, self.IMF_slope, '*.fits')
 
-        bpass_lib = self.lib.bpass(pathname, velscale, age_range=age_range, norm_range="continuum")
+        bpass_lib = self.lib.bpass(pathname, velscale, self.lib_path, age_range=age_range, norm_range="continuum")
 
         # reg_dim = bpass_lib.templates.shape[1:]
         # stars_templates = bpass_lib.templates.reshape(bpass_lib.templates.shape[0], -1)
