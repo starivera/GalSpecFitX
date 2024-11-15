@@ -3,7 +3,7 @@
 # a library of STARBURST99 templates and interpret and display the output
 # of pPXF when using those templates as input.
 
-from os import path
+import os
 import glob, re
 
 import numpy as np
@@ -146,7 +146,7 @@ class bpass:
 
     """
 
-    def __init__(self, pathname, velscale, FWHM_gal=None, FWHM_tem=0.4,
+    def __init__(self, pathname, velscale, lib_path, FWHM_gal=None, FWHM_tem=0.4,
                  age_range=None, metal_range=None, norm_range=None, wave_range=None):
 
         files = glob.glob(pathname)
@@ -167,7 +167,7 @@ class bpass:
         hdu = fits.open(files[0])
         ssp = hdu[0].data
 
-        lam_range_temp = fits.getdata("../BPASS/bpass_templates/bpassv2_2_1_lam.fits")
+        lam_range_temp = fits.getdata(os.path.join(lib_path, 'libraries', 'BPASS', 'bpassv2_2_1_lam.fits'))
 
         cenwave_range_temp = np.zeros(len(lam_range_temp))
 

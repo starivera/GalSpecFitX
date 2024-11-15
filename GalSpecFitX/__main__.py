@@ -104,11 +104,16 @@ class Logger(object):
 
 def get_optional_config(section, key, default=None, convert_to=None):
     value = section.get(key, default)
-    if value == "None":
-        return None
-    if convert_to:
-        return convert_to(value)
+
+    if value is not None:
+        if value.lower() == "none":
+            value=None
+
+        else:
+            value = convert_to(value)
+
     return value
+
 
 
 def main() -> None:
@@ -151,6 +156,16 @@ def main() -> None:
         FWHM_gal = InstrumentInfo(R, instr_lam_min, instr_lam_max).calc_FWHM_gal()
 
     # Library parameters
+    lib_path = get_optional_config(library, 'lib_path', default=None, convert_to=str)
+    print("lib_path is", lib_path)
+    print(lib_path is None)
+
+    if lib_path is None:
+        print("script path is", os.path.dirname(os.path.abspath(__file__)))
+        lib_path = os.path.dirname(os.path.abspath(__file__))
+
+    print("lib_path is", lib_path)
+
     library_name = library['Library']
 
     imf = library['IMF']
@@ -236,9 +251,9 @@ def main() -> None:
         processor_config['mask'] = processor.mask_spectral_lines(R, n_pix = (3,3))
 
     if library_name == 'STARBURST99':
-        library_handler = StarburstLibraryHandler()
+        library_handler = StarburstLibraryHandler(lib_path)
     elif library_name == 'BPASS':
-        library_handler = BPASSLibraryHandler(imf, star_form)
+        library_handler = BPASSLibraryHandler(imf, star_form, lib_path)
 
     sys.stdout = Logger(log_filename)
     processor.process_combined_spectrum(library_handler)
