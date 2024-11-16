@@ -10,7 +10,6 @@ setup(
         'cvxopt==1.3.2',
         'matplotlib==3.8.2',
         'numpy==1.26.2',
-        'git-lfs',
         'ppxf==9.1.1',
         'spectres==2.2.0',
         'lmfit==1.3.1',
