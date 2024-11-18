@@ -167,7 +167,7 @@ class bpass:
         hdu = fits.open(files[0])
         ssp = hdu[0].data
 
-        lam_range_temp = fits.getdata(os.path.join(lib_path, 'libraries', 'BPASS', 'bpassv2_2_1_lam.fits'))
+        lam_range_temp = fits.getdata(os.path.join(lib_path, 'BPASS', 'bpassv2_2_1_lam.fits'))
 
         cenwave_range_temp = np.zeros(len(lam_range_temp))
 

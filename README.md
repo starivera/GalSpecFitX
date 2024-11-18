@@ -19,7 +19,7 @@ This software applies the Penalized PiXel-Fitting method (pPXF) created and dist
       --config_file : Configuration filename (default: config.ini). If it is not located in input_path please include the whole path to the file. E.g. /path/to/config.ini
       --output_path : Output path for results. If not provided results will be generated in input_path.
    ```
-   
+
 
 ## DATA PREPARATION
 This software prepares a raw galaxy spectrum for spectral fitting by performing de-redshifting, binning, log re-binning and median normalization routines. This ensures the best compatibility with the fitting algorithm. Multiple spectra can be combined by creating an Astropy FITS table for each spectrum with columns 'wavelength', 'flux', and 'error'. Each table should then be stored in a separate hdu extension under one FITS file. Please provide a list of the extension numbers to the 'segments' parameter of your configuration file (e.g. 1,2,3,...). If multiple 'segments' are listed, the code will automatically combine the data into one combined spectrum ordered by smallest to largest wavelength before performing the fit.
@@ -41,7 +41,7 @@ def create_sample_spectrum(lam_min, lam_max):
 
 # Creating multiple spectra
 spectrum1 = create_sample_data(4000, 5000)
-spectrum2 = create_sample_data(5000, 6000) 
+spectrum2 = create_sample_data(5000, 6000)
 spectrum3 = create_sample_data(6000, 7000)
 
 # Create Astropy Tables
@@ -102,6 +102,7 @@ This section defines the stellar population models used for fitting.
 
 | Parameter   | Type   | Description                                                                       |
 |-------------|--------|-----------------------------------------------------------------------------------|
+| `lib_path`  | str/None | Path to library (BPASS or STARBURST99). If None or not provided only sample libraries are used.  |
 | `Library`   | string | Name of the library for stellar population templates (`STARBURST99` or `BPASS`).  |
 | `IMF`       | string | Initial mass function (IMF) used in the library (See Choosing an IMF section).    |
 | `star_form` | string | Star formation model (See Choosing Star Formation section).                       |
@@ -142,8 +143,8 @@ This section contains additional parameters for customizing the fitting process.
 
 ---
 *See pPXF documentation for further explanation<br>
-**Computationally intensive and generally unnecessary 
-  
+**Computationally intensive and generally unnecessary
+
 ## Spectral Fitting Parameters - Recommended
 
 These are the parameters I recommend focusing on as they tend to have the greatest influence on the quality of the fit:
