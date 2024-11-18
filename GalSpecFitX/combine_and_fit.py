@@ -174,7 +174,7 @@ class StarburstLibraryHandler(LibraryHandler):
     def retrieve_templates(self, velscale: float, age_range: List[float]) -> Tuple[np.ndarray, Tuple[int, ...], np.ndarray, np.ndarray]:
 
         # ppxf_dir = os.path.dirname(os.path.realpath(self.lib.__file__))
-        pathname = os.path.join(self.lib_path, 'libraries', 'STARBURST99', self.star_form, self.IMF_slope, '*.fits')
+        pathname = os.path.join(self.lib_path, 'STARBURST99', self.star_form, self.IMF_slope, '*.fits')
         starburst_lib = self.lib.starburst(pathname, velscale, self.lib_path, age_range=age_range)
 
         reg_dim = starburst_lib.templates.shape[1:]
@@ -211,7 +211,7 @@ class BPASSLibraryHandler(LibraryHandler):
                  and logarithm of template wavelengths.
         """
         # ppxf_dir = os.path.dirname(os.path.realpath(self.lib.__file__))
-        pathname = os.path.join(self.lib_path, 'libraries', 'BPASS', self.star_form, self.IMF_slope, '*.fits')
+        pathname = os.path.join(self.lib_path, 'BPASS', self.star_form, self.IMF_slope, '*.fits')
 
         bpass_lib = self.lib.bpass(pathname, velscale, self.lib_path, age_range=age_range, norm_range="continuum")
 

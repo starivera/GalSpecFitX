@@ -162,7 +162,7 @@ def main() -> None:
 
     if lib_path is None:
         print("script path is", os.path.dirname(os.path.abspath(__file__)))
-        lib_path = os.path.dirname(os.path.abspath(__file__))
+        lib_path = os.path.dirname(os.path.abspath(__file__))+'/sample_libraries'
 
     print("lib_path is", lib_path)
 
