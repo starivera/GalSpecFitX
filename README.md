@@ -94,7 +94,7 @@ This section contains information about the instrument used for the observations
 | `FWHM_gal`        | float  | Full width at half maximum (FWHM) for the galaxy spectrum (in Angstroms).   |
 | *or the following three parameters if `FWHM_gal` is not provided:*                                       |
 | `instr_lam_min`   | float  | Minimum wavelength of the instrument (in microns).                          |
-| `instr_lam_max`   | float  | Maximum wavelength of the instrument (in microns.                           |
+| `instr_lam_max`   | float  | Maximum wavelength of the instrument (in microns).                           |
 | `R`               | float  | Resolving power of the instrument.                                          |
 
 ### 3. Library Section
@@ -123,8 +123,8 @@ This section contains additional parameters for customizing the fitting process.
 | `constr_templ`        | dict            | Constraints applied to templates during fitting; default is None.*                                             |
 | `constr_kinem`        | dict            | Constraints on kinematic parameters (e.g., velocity); default is None.*                                        |
 | `degree`              | int             | Degree of additive polynomial for continuum fitting; default is 4. Set ``degree=-1`` to not include any additive polynomial.|
-| `dust_gas`            | None/dict       | Dust attenuation parameters for gas; default is None. {"start":..., "bounds":..., "fixed":...}                |
 | `dust_stars`          | None/dict       | Dust attenuation parameters for stars; default is None. {"start":..., "bounds":..., "fixed":...}              |
+| `dust_gas`            | None/dict       | Dust attenuation parameters for gas; default is None. {"start":..., "bounds":..., "fixed":...}                |
 | `fixed_stars`         | None/list       | Boolean vector set to ``True`` where a given kinematic parameter has to be held fixed with the value given in ``start_stars``. This is a list with the same dimensions as ``start_stars``. |
 | `fixed_gas`           | None/list       | Boolean vector set to ``True`` where a given kinematic parameter has to be held fixed with the value given in ``start_gas``. This is a list with the same dimensions as ``start_gas``. |
 | `fraction`            | float           | Ratio between stars and gas component.*                                                                        |
