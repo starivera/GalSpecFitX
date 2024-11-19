@@ -303,8 +303,8 @@ class TemplateRetrieval:
 
         return templates, np.array(component), gas_component, moments, start
 
-    def fit_spectrum(self, library, templates: np.ndarray, velscale: float, start: List[List[float]], moments: List[int], lam_temp: np.ndarray,
-                     reg_dim: Tuple[int, ...], component: List[int], gas_component: Optional[np.ndarray], gas_names: List[str], output_path: str, dust,
+    def fit_spectrum(self, library, templates: np.ndarray, velscale: float, start: List[List[float]], dust, bounds, fixed, moments: List[int], lam_temp: np.ndarray,
+                     reg_dim: Tuple[int, ...], component: List[int], gas_component: Optional[np.ndarray], gas_names: List[str], output_path: str,
                      **kwargs) -> None:
         """
         Fit the combined spectrum using pPXF.
@@ -343,8 +343,8 @@ class TemplateRetrieval:
             # print("Reddening is", kwargs['reddening'])
 
 
-        pp = ppxf(templates, gal_flux, gal_err, velscale, start, moments=moments, lam=gal_lam, lam_temp=lam_temp,
-                  reg_dim=reg_dim, component=component, gas_component=gas_component, gas_names=gas_names, dust=dust,
+        pp = ppxf(templates, gal_flux, gal_err, velscale, start, dust=dust, bounds=bounds, fixed=fixed, moments=moments, lam=gal_lam, lam_temp=lam_temp,
+                  reg_dim=reg_dim, component=component, gas_component=gas_component, gas_names=gas_names,
                   **kwargs)
 
         # Create the Matplotlib figure
@@ -540,21 +540,25 @@ class SpectrumProcessor:
             dust_gas["component"] = np.array(component) == 1
             # dust_gas["func"] = reddy_attenuation
 
+        bounds_stars = self.config['bounds_stars']
+        bounds_gas = self.config['bounds_gas']
+        fixed_stars = self.config['fixed_stars']
+        fixed_gas = self.config['fixed_gas']
+
         if gas_component is None:
-            dust = [dust_stars]
+            dust = None if dust_stars is None else [dust_stars]
+            bounds = bounds_stars
+            fixed = fixed_stars
         else:
             dust = [dust_stars, dust_gas]
-
-        if dust == [None]:
-            dust=None
-
-        # print('dust is', dust)
-        # print(component.size, dust[0]["component"].size)
+            bounds = [bounds_stars, bounds_gas]
+            fixed = [fixed_stars, fixed_gas]
 
         # Step 6: Fit the spectrum using pPXF
         fit_kwargs = {
             key: value for key, value in self.config.items()
-            if key not in ['age_range', 'start_stars', 'start_gas', 'FWHM_gal', 'output_path', 'rest_wavelengths', 'segments', 'default_noise', 'dust_stars', 'dust_gas']
+            if key not in ['age_range', 'start_stars', 'start_gas', 'FWHM_gal', 'output_path', 'rest_wavelengths', 'segments', 'default_noise', 'dust_stars', 'dust_gas', 'bounds_stars', 'bounds_gas', 'fixed_stars', 'fixed_gas'
+            ]
         }
 
         light_weights = template_retrieval.fit_spectrum(
@@ -562,6 +566,9 @@ class SpectrumProcessor:
             templates,
             velscale,
             start,
+            dust,
+            bounds,
+            fixed,
             moments,
             lam_temp,
             reg_dim,
@@ -569,6 +576,6 @@ class SpectrumProcessor:
             gas_component,
             gas_names,
             output_path = self.config['output_path'],
-            dust=dust,
+
             **fit_kwargs
         )
