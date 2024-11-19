@@ -122,7 +122,7 @@ This section contains additional parameters for customizing the fitting process.
 | `clean`               | bool            | Enables outlier removal if True; default is False.                                                            |
 | `constr_templ`        | dict            | Constraints applied to templates during fitting; default is None.*                                             |
 | `constr_kinem`        | dict            | Constraints on kinematic parameters (e.g., velocity); default is None.*                                        |
-| `degree`              | int             | Degree of additive polynomial for continuum fitting; default is 4.                                            |
+| `degree`              | int             | Degree of additive polynomial for continuum fitting; default is 4. Set ``degree=-1`` to not include any additive polynomial.|
 | `dust_gas`            | None/dict       | Dust attenuation parameters for gas; default is None. {"start":..., "bounds":..., "fixed":...}                |
 | `dust_stars`          | None/dict       | Dust attenuation parameters for stars; default is None. {"start":..., "bounds":..., "fixed":...}              |
 | `fixed_stars`         | None/list       | Boolean vector set to ``True`` where a given kinematic parameter has to be held fixed with the value given in ``start_stars``. This is a list with the same dimensions as ``start_stars``. |
