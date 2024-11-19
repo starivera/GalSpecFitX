@@ -144,7 +144,7 @@ This section contains additional parameters for customizing the fitting process.
 
 
 ---
-*See pPXF documentation for further explanation<br>
+*See pPXF documentation for further explanation on these parameters.<br>
 **Computationally intensive and generally unnecessary
 
 ## Spectral Fitting Parameters - Recommended
