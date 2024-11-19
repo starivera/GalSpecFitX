@@ -157,14 +157,9 @@ def main() -> None:
 
     # Library parameters
     lib_path = get_optional_config(library, 'lib_path', default=None, convert_to=str)
-    print("lib_path is", lib_path)
-    print(lib_path is None)
 
     if lib_path is None:
-        print("script path is", os.path.dirname(os.path.abspath(__file__)))
         lib_path = os.path.dirname(os.path.abspath(__file__))+'/sample_libraries'
-
-    print("lib_path is", lib_path)
 
     library_name = library['Library']
 

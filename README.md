@@ -116,15 +116,17 @@ This section contains additional parameters for customizing the fitting process.
 |-----------------------|-----------------|---------------------------------------------------------------------------------------------------------------|
 | `start_stars`         | None/list       | Initial kinematic parameters (velocity and sigma required) for stars; defaults are used if set to None.       |
 | `start_gas`           | None/list       | Initial kinematic parameters (velocity and sigma required) for gas; defaults are used if set to None.         |
-| `bias`                | float           | Optional bias term to control fit sensitivity; default is None.*                                               |
-| `bounds`              | None/list       | Parameter bounds (e.g., min and max values) for fitting constraints; default is None.                         |
+| `bias`                | float           | Optional bias term to control fit sensitivity; default is None.*                                              |
+| `bounds_stars`        | None/list       | Parameter bounds (e.g., min and max values) for fitting constraints in start_stars; default is None.          |
+| `bounds_gas`          | None/list       | Parameter bounds (e.g., min and max values) for fitting constraints in start_gas; default is None.            |
 | `clean`               | bool            | Enables outlier removal if True; default is False.                                                            |
 | `constr_templ`        | dict            | Constraints applied to templates during fitting; default is None.*                                             |
 | `constr_kinem`        | dict            | Constraints on kinematic parameters (e.g., velocity); default is None.*                                        |
 | `degree`              | int             | Degree of additive polynomial for continuum fitting; default is 4.                                            |
 | `dust_gas`            | None/dict       | Dust attenuation parameters for gas; default is None. {"start":..., "bounds":..., "fixed":...}                |
 | `dust_stars`          | None/dict       | Dust attenuation parameters for stars; default is None. {"start":..., "bounds":..., "fixed":...}              |
-| `fixed`               | None/list       | Boolean vector set to ``True`` where a given kinematic parameter has to be held fixed with the value given in ``start``. This is an array, or list, with the same dimensions as ``start``. |
+| `fixed_stars`         | None/list       | Boolean vector set to ``True`` where a given kinematic parameter has to be held fixed with the value given in ``start_stars``. This is a list with the same dimensions as ``start_stars``. |
+| `fixed_gas`           | None/list       | Boolean vector set to ``True`` where a given kinematic parameter has to be held fixed with the value given in ``start_gas``. This is a list with the same dimensions as ``start_gas``. |
 | `fraction`            | float           | Ratio between stars and gas component.*                                                                        |
 | `ftol`                | float           | Tolerance level for fit convergence; default is 1e-4.                                                         |
 | `global_search`**     | bool or dict    | Enables global optimization of the nonlinear parameters (kinematics) before starting the usual local optimizer.if True; default is False. |
