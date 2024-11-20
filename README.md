@@ -156,8 +156,8 @@ These are the parameters I recommend focusing on as they tend to have the greate
 - **Degree**: Degree of the additive Legendre polynomial used to correct the template continuum shape during the fit.  
 - **Linear**: Keeps all nonlinear parameters fixed and only performs a linear least-squares routine for the templates and additive polynomial weights.
 
-## Accessing Libraries
-After following the installation instructions you will have automatic access to the sample libraries located in the GalSpecFitX subfolder ``sample_libraries``. The sample libraries provided are the Starburst99 Geneva High evolutionary track, Salpeter IMF for instantaneous star formation models, and BPASS Salpeter IMF (`imf135all_100`) single star formation models. The provided config.ini file uses these libraries by default by setting lib_path to None.
+## Accessing the Starburst99 and BPASS Libraries
+After following the installation instructions you will have automatic access to the sample libraries located in the GalSpecFitX subfolder ``sample_libraries``. The sample libraries provided are the Starburst99 Geneva High evolutionary track, Salpeter IMF for instantaneous star formation models, and BPASS Salpeter IMF (`imf135all_100`) single star formation models. The provided config.ini file uses these libraries by default by setting the `lib_path` parameter to None.
 
 ### <u>All Available libraries</u>
 
@@ -179,7 +179,7 @@ For BPASS:
 
 For further explanation of these choices see the BPASS [manual](https://livewarwickac.sharepoint.com/sites/Physics-BinaryPopulationandSpectralSynthesisBPASS/Shared%20Documents/Forms/AllItems.aspx?ga=1&id=%2Fsites%2FPhysics%2DBinaryPopulationandSpectralSynthesisBPASS%2FShared%20Documents%2FBPASS%5Fv2%2E2%5Frelease%2FBPASS%20v2%2E2%2E1%20full%20release%2FBPASSv2%2E2%2E1%5FManual%2Epdf&viewid=141639b8%2D0962%2D4a5a%2Db1e4%2D8977a94c88eb&parent=%2Fsites%2FPhysics%2DBinaryPopulationandSpectralSynthesisBPASS%2FShared%20Documents%2FBPASS%5Fv2%2E2%5Frelease%2FBPASS%20v2%2E2%2E1%20full%20release).
 
-#### How to access full suite of libraries using GIT LFS
+#### How to access the full suite of libraries using GIT LFS
 
 The full suite of libraries although present in the root folder of the repository under `full_suite` will not be useable when you've first cloned the repository. Git Large File Storage (LFS) must be installed to fetch and download them. The first thing you will need to do is install Git LFS. If you have Homebrew you can do this by running:
 
