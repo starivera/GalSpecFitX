@@ -159,6 +159,18 @@ These are the parameters I recommend focusing on as they tend to have the greate
 ## Accessing the Starburst99 and BPASS Libraries
 After following the installation instructions you will have automatic access to the sample libraries located in the GalSpecFitX subfolder ``sample_libraries``. The sample libraries provided are the Starburst99 Geneva High evolutionary track, Salpeter IMF for instantaneous star formation models, and BPASS Salpeter IMF (`imf135all_100`) single star formation models. The provided config.ini file uses these libraries by default by setting the `lib_path` parameter to None.
 
+#### How to access the full suite of libraries using GIT LFS
+
+The full suite of libraries although present in the root folder of the repository under `full_suite` will not be useable when you've first cloned the repository. Git Large File Storage (LFS) must be installed to fetch and download them. The first thing you will need to do is install Git LFS. If you have Homebrew you can do this by running:
+
+```brew install git-lfs``` or by way of one of the methods listed in the Git LFS [docs](https://git-lfs.com/).
+
+Next, run ```git lfs install``` to initialize it.
+
+Now you can download the models by running ```git lfs pull``` in the directory containing full_suite. WARNING: These libraries are LARGE, so if you would like to store the libraries somewhere with more storage space feel free to move the `full_suite` folder after downloading them.
+
+Finally, all that needs to be done to start using the full suite is to direct the code to the directory via the `lib_path` parameter of your configuration file (e.g. lib_path=/path/to/full_suite). Now, you can explore all the models by choosing parameters based on the **All Available Libraries** section directly below.
+
 ### <u>All Available libraries</u>
 
 A full suite of STARBURST99 and BPASS are currently available, and are provided in the root directory of the repository. The table below identifies the full criteria and keywords for selecting a set of models in your configuration file based on parameters such as evolutionary track, IMF slopes, and type of star formation.
@@ -179,14 +191,3 @@ For BPASS:
 
 For further explanation of these choices see the BPASS [manual](https://livewarwickac.sharepoint.com/sites/Physics-BinaryPopulationandSpectralSynthesisBPASS/Shared%20Documents/Forms/AllItems.aspx?ga=1&id=%2Fsites%2FPhysics%2DBinaryPopulationandSpectralSynthesisBPASS%2FShared%20Documents%2FBPASS%5Fv2%2E2%5Frelease%2FBPASS%20v2%2E2%2E1%20full%20release%2FBPASSv2%2E2%2E1%5FManual%2Epdf&viewid=141639b8%2D0962%2D4a5a%2Db1e4%2D8977a94c88eb&parent=%2Fsites%2FPhysics%2DBinaryPopulationandSpectralSynthesisBPASS%2FShared%20Documents%2FBPASS%5Fv2%2E2%5Frelease%2FBPASS%20v2%2E2%2E1%20full%20release).
 
-#### How to access the full suite of libraries using GIT LFS
-
-The full suite of libraries although present in the root folder of the repository under `full_suite` will not be useable when you've first cloned the repository. Git Large File Storage (LFS) must be installed to fetch and download them. The first thing you will need to do is install Git LFS. If you have Homebrew you can do this by running:
-
-```brew install git-lfs``` or by way of one of the methods listed in the Git LFS [docs](https://git-lfs.com/).
-
-Next, run ```git lfs install``` to initialize it.
-
-Now you can download the models by running ```git lfs pull``` in the directory containing full_suite. WARNING: These libraries are LARGE, so if you would like to store the libraries somewhere with more storage space feel free to move the `full_suite` folder after downloading them.
-
-Finally, all that needs to be done to start using the full_suite is to direct the code to the directory via the `lib_path` parameter of your configuration file (e.g. lib_path=/path/to/full_suite). Now, you can explore all the models by choosing parameters based on the **All Available Libraries** section directly above.
