@@ -178,3 +178,15 @@ For BPASS:
 | `single`<br> `binary`            | `imf_chab100`<br> `imf_chab300`<br> `imf100_100`<br> `imf100_300`<br> `imf135_100`<br>  `imf135_300`<br> `imf135all_100`<br> `imf170_100`<br> `imf170_300`<br> |
 
 For further explanation of these choices see the BPASS [manual](https://livewarwickac.sharepoint.com/sites/Physics-BinaryPopulationandSpectralSynthesisBPASS/Shared%20Documents/Forms/AllItems.aspx?ga=1&id=%2Fsites%2FPhysics%2DBinaryPopulationandSpectralSynthesisBPASS%2FShared%20Documents%2FBPASS%5Fv2%2E2%5Frelease%2FBPASS%20v2%2E2%2E1%20full%20release%2FBPASSv2%2E2%2E1%5FManual%2Epdf&viewid=141639b8%2D0962%2D4a5a%2Db1e4%2D8977a94c88eb&parent=%2Fsites%2FPhysics%2DBinaryPopulationandSpectralSynthesisBPASS%2FShared%20Documents%2FBPASS%5Fv2%2E2%5Frelease%2FBPASS%20v2%2E2%2E1%20full%20release).
+
+#### How to access full suite of libraries using GIT LFS
+
+The full suite of libraries although present in the root folder of the repository under `full_suite` will not be useable when you've first cloned the repository. Git Large File Storage (LFS) must be installed to fetch and download them. The first thing you will need to do is install Git LFS. If you have Homebrew you can do this by running:
+
+```brew install git-lfs``` or by way of one of the methods listed in the Git LFS [docs](https://git-lfs.com/).
+
+Next, run ```git lfs install``` to initialize it.
+
+Now you can download the models by running ```git lfs pull``` in the directory containing full_suite. WARNING: These libraries are LARGE, so if you would like to store the libraries somewhere with more storage space feel free to move the `full_suite` folder after downloading them.
+
+Finally, all that needs to be done to start using the full_suite is to direct the code to the directory via the `lib_path` parameter of your configuration file (e.g. lib_path=/path/to/full_suite).
