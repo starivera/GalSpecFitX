@@ -103,8 +103,9 @@ This section defines the stellar population models used for fitting.
 |-------------|--------|-----------------------------------------------------------------------------------|
 | `lib_path`  | str/None | Path to library (BPASS or STARBURST99). If None or not provided only sample libraries are used.  |
 | `Library`   | string | Name of the library for stellar population templates (`STARBURST99` or `BPASS`).  |
-| `IMF`       | string | Initial mass function (IMF) used in the library (See Choosing an IMF section).    |
-| `star_form` | string | Star formation model (See Choosing Star Formation section).                       |
+| `evol_track`| string | (Optional) Only applies to Starburst99 libraries. If not provided default is `geneva_high`. |
+| `IMF`       | string | Initial mass function (IMF) used in the library (See Accessing Libraries section).    |
+| `star_form` | string | Star formation model (See Accessing Libraries section).                       |
 | `age_min`   | float  | (Optional) Minimum stellar population age for fitting (in Gyr).                   |
 | `age_max`   | float  | (Optional) Maximum stellar population age for fitting (in Gyr).                   |
 
@@ -155,17 +156,23 @@ These are the parameters I recommend focusing on as they tend to have the greate
 - **Degree**: Degree of the additive Legendre polynomial used to correct the template continuum shape during the fit.  
 - **Linear**: Keeps all nonlinear parameters fixed and only performs a linear least-squares routine for the templates and additive polynomial weights.
 
-## How to Access Full Suite of Libraries (STARBURST99 AND BPASS) using GIT LFS
-After following the installation instructions you will have automatic access to the sample libraries located in the GalSpecFitX subfolder ``sample_libraries``. The sample libraries provided are the Starburst99 Geneva High evolutionary track, Salpeter IMF for instantaneous star formation models (see ), and BPASS Salpeter IMF single star formation models. The provided config.ini file uses these libraries by default by setting lib_path to None.
+## Accessing Libraries
+After following the installation instructions you will have automatic access to the sample libraries located in the GalSpecFitX subfolder ``sample_libraries``. The sample libraries provided are the Starburst99 Geneva High evolutionary track, Salpeter IMF for instantaneous star formation models, and BPASS Salpeter IMF (`imf135all_100`) single star formation models. The provided config.ini file uses these libraries by default by setting lib_path to None.
 
 ### <u>All Available libraries</u>
 
-A full suite of STARBURST99 and BPASS are currently available, and are provided in the root directory of the repository. The table below identifies the full criteria and keywords for selecting a library a set of models in your configuration file based on parameters such as evolutionary track, IMF slopes, and type of star formation.
+A full suite of STARBURST99 and BPASS are currently available, and are provided in the root directory of the repository. The table below identifies the full criteria and keywords for selecting a set of models in your configuration file based on parameters such as evolutionary track, IMF slopes, and type of star formation.
 
 For Starburst99:
 
 | **Evolutionary Track (`evol_track`)**                | **Star Formation (`star_form`)** | **Initial Mass Function (`IMF`)** |
 |------------------------------------------------------|----------------------------------|-----------------------------------|
-| `geneva_high`<br> Geneva tracks with high mass loss  | `inst`<br> Instantaneous         | `salpeter`<br> `kroupa`<br>       |
+| `geneva_high` -> Geneva tracks with high mass loss   | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       |
+
+For BPASS:
+
+| **Star Formation (`star_form`)** | **Initial Mass Function (`IMF`)** |
+|----------------------------------|-----------------------------------|
+| `single`<br> `binary`            | `imf_chab100`<br> `imf_chab300`<br> `imf100_100`<br> `imf100_300`<br> `imf135_100`<br>  `imf135_300`<br> `imf135all_100`<br> `imf170_100`<br> `imf170_300`<br> |
 
 
