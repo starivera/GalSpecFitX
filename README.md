@@ -103,7 +103,7 @@ This section defines the stellar population models used for fitting.
 |-------------|--------|-----------------------------------------------------------------------------------|
 | `lib_path`  | str/None | Path to library (BPASS or STARBURST99). If None or not provided only sample libraries are used.  |
 | `Library`   | string | Name of the library for stellar population templates (`STARBURST99` or `BPASS`).  |
-| `evol_track`| string | (Optional) Only applies to Starburst99 libraries. If not provided default is `geneva_high`. |
+| `evol_track`| string | (Optional) Evolutionary track. Only applies to Starburst99 libraries. If not provided default is `geneva_high`. |
 | `IMF`       | string | Initial mass function (IMF) used in the library (See Accessing Libraries section).    |
 | `star_form` | string | Star formation model (See Accessing Libraries section).                       |
 | `age_min`   | float  | (Optional) Minimum stellar population age for fitting (in Gyr).                   |
@@ -190,4 +190,3 @@ For BPASS:
 | `single`<br> `binary`            | `imf_chab100`<br> `imf_chab300`<br> `imf100_100`<br> `imf100_300`<br> `imf135_100`<br>  `imf135_300`<br> `imf135all_100`<br> `imf170_100`<br> `imf170_300`<br> |
 
 For further explanation of these choices see the BPASS [manual](https://livewarwickac.sharepoint.com/sites/Physics-BinaryPopulationandSpectralSynthesisBPASS/Shared%20Documents/Forms/AllItems.aspx?ga=1&id=%2Fsites%2FPhysics%2DBinaryPopulationandSpectralSynthesisBPASS%2FShared%20Documents%2FBPASS%5Fv2%2E2%5Frelease%2FBPASS%20v2%2E2%2E1%20full%20release%2FBPASSv2%2E2%2E1%5FManual%2Epdf&viewid=141639b8%2D0962%2D4a5a%2Db1e4%2D8977a94c88eb&parent=%2Fsites%2FPhysics%2DBinaryPopulationandSpectralSynthesisBPASS%2FShared%20Documents%2FBPASS%5Fv2%2E2%5Frelease%2FBPASS%20v2%2E2%2E1%20full%20release).
-

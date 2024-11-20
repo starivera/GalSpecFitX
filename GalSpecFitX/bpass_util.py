@@ -196,13 +196,11 @@ class bpass:
         # The formula below is rigorously valid if the shapes of the
         # instrumental spectral profiles are well approximated by Gaussians.
         if FWHM_gal is not None:
-            fwhm_diff = (fwhm_gal**2 - fwhm_tem**2).clip(0)
-            if np.any(fwhm_diff == 0):
+            FWHM_diff = (FWHM_gal**2 - FWHM_tem**2).clip(0)
+            if np.any(FWHM_diff == 0):
                 logging.info("WARNING: the template's resolution dlam is larger than the galaxy's")
-            sigma = np.sqrt(fwhm_diff)/np.sqrt(4*np.log(4))
+            sigma = np.sqrt(FWHM_diff)/np.sqrt(4*np.log(4))
 
-            # FWHM_dif = np.sqrt(FWHM_gal**2 - FWHM_tem**2)
-            # sigma = FWHM_dif/2.355/h2['CDELT1']   # Sigma difference in pixels
 
         # Here we make sure the spectra are sorted in both [M/H] and Age
         # along the two axes of the rectangular grid of templates.
@@ -300,8 +298,6 @@ class bpass:
             metal_mask = ygrid == unique_metals[i]  # Mask for the current metallicity
             age_for_metal = xgrid[metal_mask]  # Ages corresponding to the current metallicity
             weight_for_metal = weights[metal_mask]  # Weights for the current metallicity
-
-            # print(metal_mask, age_for_metal, weight_for_metal)
 
             ax.bar(age_for_metal, weight_for_metal, width=1.0, color=colors[i], bottom=bottoms, label=f"{unique_metals[i]/z_sol} * Zsol")
             bottoms += weight_for_metal
