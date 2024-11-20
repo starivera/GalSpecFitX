@@ -140,7 +140,7 @@ class starburst:
 
     """
 
-    def __init__(self, pathname, velscale, FWHM_gal=None, FWHM_tem=0.4,
+    def __init__(self, pathname, velscale, lib_path, evol_track, FWHM_gal=None, FWHM_tem=0.4,
                  age_range=None, metal_range=None, wave_range=None):
 
         files = glob.glob(pathname)
@@ -160,9 +160,8 @@ class starburst:
         hdu = fits.open(files[0])
         ssp = hdu[0].data
 
-        # Get the directory where main.py is located
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        lam_range_temp = fits.getdata(os.path.join(script_dir, "starburst_lib/stellar_templates/GENEVA_high_lam.fits"))
+        lam = glob.glob(os.path.join(lib_path, "STARBURST99", evol_track, "*lam.fits"))[0]
+        lam_range_temp = fits.getdata(lam)
 
         cenwave_range_temp = np.zeros(len(lam_range_temp))
 
