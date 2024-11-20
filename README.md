@@ -164,8 +164,8 @@ A full suite of STARBURST99 and BPASS are currently available, and are provided 
 
 For Starburst99:
 
-| **Evolutionary Track**                              | **Star Formation**     | **Initial Mass Function (IMF) Slopes** |
-|-----------------------------------------------------|------------------------|----------------------------------------|
-| geneva_high<br> GENEVA TRACKS WITH HIGH MASS LOSS   | inst<br> Instantaneous | salpeter<br> kroupa<br>                |
+| **Evolutionary Track**                               | **Star Formation**       | **Initial Mass Function (IMF) Slopes** |
+|------------------------------------------------------|--------------------------|----------------------------------------|
+| `geneva_high`<br> Geneva tracks with high mass loss  | `inst`<br> Instantaneous | `salpeter`<br> `kroupa`<br>            |
 
 
