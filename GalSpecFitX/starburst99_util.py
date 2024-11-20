@@ -279,13 +279,10 @@ class starburst:
             age_for_metal = xgrid[metal_mask]  # Ages corresponding to the current metallicity
             weight_for_metal = weights[metal_mask]  # Weights for the current metallicity
 
-            print(metal_mask, age_for_metal, weight_for_metal)
-
             ax.bar(age_for_metal, weight_for_metal, width=1.0, color=colors[i], bottom=bottoms, label=f"{unique_metals[i]/z_sol} * Zsol")
             bottoms += weight_for_metal
 
         # Calculate and plot mean age line
-        print("Shapes", unique_ages.shape, weights.sum(axis=1))
         mean_age = np.average(unique_ages, weights=weights.sum(axis=1))
         ax.axvline(mean_age, color='k', linestyle='--', linewidth=1.5)
         ax.text(mean_age + 1, 0.9, f'<Age> = {mean_age:.2f}', verticalalignment='center', horizontalalignment='right', fontsize=10)
@@ -300,6 +297,3 @@ class starburst:
         ax.set_xlim(0, np.max(xgrid) + 5)
         ax.set_ylim(0, 1)
         ax.legend(loc='upper right')
-
-        # Show plot
-        plt.show()
