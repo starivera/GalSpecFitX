@@ -38,7 +38,16 @@ def read_config(filename: str, input_path: str) -> configparser.ConfigParser:
         raise FileNotFoundError(f"The configuration file {config_file} does not exist.")
 
     config = configparser.ConfigParser()
-    config.read(config_file)
+
+    try:
+        config.read(config_file)
+    except configparser.Error as e:
+        raise ValueError(f"Error parsing the configuration file: {e}")
+
+    required_sections = ['Settings', 'instrument', 'library', 'fit']
+    for section in required_sections:
+        if section not in config:
+            raise KeyError(f"Missing required section '{section}' in the configuration file.")
 
     return config
 
@@ -54,7 +63,7 @@ def parse_args() -> argparse.Namespace:
 
     #Create help strings:
     input_path_help = "Input path containing galaxy data. If not provided assumes current directory. Please provide galaxy filename in your configuration file."
-    config_file_help = "Configuration filename (default: config.ini). If it is not located in input_path please include the whole path to the file. E.g. /path/to/config.ini"
+    config_file_help = "Configuration filename (default: config.ini) which is expected to be in input_path."
     output_path_help = "Output path for results. If not provided results will be generated in input_path."
 
 
@@ -115,7 +124,6 @@ def get_optional_config(section, key, default=None, convert_to=None):
     return value
 
 
-
 def main() -> None:
 
     """Main function."""
@@ -125,7 +133,10 @@ def main() -> None:
     input_path     = args.input_path
     config_file    = args.config_file
     output_path    = args.output_path
-    output_path = output_path or os.getcwd()
+    output_path = output_path if output_path else input_path if input_path else os.getcwd()
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
 
     config = read_config(config_file, input_path)
     settings = config['Settings']
@@ -159,9 +170,20 @@ def main() -> None:
     lib_path = get_optional_config(library, 'lib_path', default=None, convert_to=str)
 
     if lib_path is None:
-        lib_path = os.path.dirname(os.path.abspath(__file__))+'/sample_libraries'
+        lib_path = os.path.dirname(os.path.abspath(__file__)) + '/sample_libraries'
 
-    library_name = library['Library']
+    library_name = library['Library'].upper()
+
+    if library_name not in ['STARBURST99', 'BPASS']:
+        logging.error(f"Unknown library: {library_name}")
+        raise ValueError(f"Unsupported library: {library_name}")
+
+    evol_track = get_optional_config(library, 'evol_track', default=None, convert_to=str)
+
+    if evol_track is None and library_name == 'STARBURST99':
+        evol_track = 'geneva_high'
+    elif evol_track is not None and library_name != 'STARBURST99':
+        logging.info("evol_track parameter can only be used with Starburst99 and will therefore be ignored.")
 
     imf = library['IMF']
 
@@ -183,7 +205,7 @@ def main() -> None:
     }
 
     for key, value in fit.items():
-        if value == "None":
+        if value.lower() == "none":
             value = None
         elif value.lower() in ['true', 'false']:
             value = value.lower() == 'true'
@@ -191,8 +213,9 @@ def main() -> None:
             try:
                 # Use ast.literal_eval() to safely evaluate the value
                 value = ast.literal_eval(value)
-            except (ValueError, SyntaxError):
-                pass  # If it's not a valid literal, leave it as is
+            except (ValueError, SyntaxError) as e:
+                logging.error(f"Error processing {key}: {e}")
+                continue
 
         processor_config[key] = value
 
@@ -240,13 +263,13 @@ def main() -> None:
     # Call mask_spectral_lines with rest_wavelengths from processor_config
     if processor_config['rest_wavelengths'] is not None:
 
-        assert instrument['R'] != "None", "Must provide resolving power to use spectral line masking."
+        assert instrument['R'].lower() != "none", "Must provide resolving power to use spectral line masking."
 
         R = float(instrument['R'])
         processor_config['mask'] = processor.mask_spectral_lines(R, n_pix = (3,3))
 
     if library_name == 'STARBURST99':
-        library_handler = StarburstLibraryHandler(lib_path)
+        library_handler = StarburstLibraryHandler(lib_path, evol_track)
     elif library_name == 'BPASS':
         library_handler = BPASSLibraryHandler(imf, star_form, lib_path)
 

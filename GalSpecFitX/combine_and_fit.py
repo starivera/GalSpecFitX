@@ -166,16 +166,18 @@ class LibraryHandler(ABC):
 
 class StarburstLibraryHandler(LibraryHandler):
 
-    def __init__(self, lib_path: str):
+    def __init__(self, lib_path: str, evol_track: str):
         import starburst_util as lib  # Import the library only if using this handler
         self.lib = lib
         self.lib_path = lib_path
+        self.evol_track = evol_track
+
 
     def retrieve_templates(self, velscale: float, age_range: List[float]) -> Tuple[np.ndarray, Tuple[int, ...], np.ndarray, np.ndarray]:
 
         # ppxf_dir = os.path.dirname(os.path.realpath(self.lib.__file__))
-        pathname = os.path.join(self.lib_path, 'STARBURST99', self.star_form, self.IMF_slope, '*.fits')
-        starburst_lib = self.lib.starburst(pathname, velscale, self.lib_path, age_range=age_range)
+        pathname = os.path.join(self.lib_path, 'STARBURST99', self.evol_track, self.star_form, self.IMF_slope, '*.fits')
+        starburst_lib = self.lib.starburst(pathname, velscale, self.lib_path, self.evol_track, age_range=age_range)
 
         reg_dim = starburst_lib.templates.shape[1:]
         stars_templates = starburst_lib.templates.reshape(starburst_lib.templates.shape[0], -1)
@@ -535,10 +537,10 @@ class SpectrumProcessor:
 
         if dust_stars is not None:
             dust_stars["component"] = np.array(component) == 0
-            # dust_stars["func"] = reddy_attenuation
+            dust_stars["func"] = reddy_attenuation
         elif dust_gas is not None:
             dust_gas["component"] = np.array(component) == 1
-            # dust_gas["func"] = reddy_attenuation
+            dust_gas["func"] = reddy_attenuation
 
         bounds_stars = self.config['bounds_stars']
         bounds_gas = self.config['bounds_gas']
