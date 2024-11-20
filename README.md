@@ -20,7 +20,6 @@ This software applies the Penalized PiXel-Fitting method (pPXF) created and dist
       --output_path : Output path for results. If not provided results will be generated in input_path.
    ```
 
-
 ## DATA PREPARATION
 This software prepares a raw galaxy spectrum for spectral fitting by performing de-redshifting, binning, log re-binning and median normalization routines. This ensures the best compatibility with the fitting algorithm. Multiple spectra can be combined by creating an Astropy FITS table for each spectrum with columns 'wavelength', 'flux', and 'error'. Each table should then be stored in a separate hdu extension under one FITS file. Please provide a list of the extension numbers to the 'segments' parameter of your configuration file (e.g. 1,2,3,...). If multiple 'segments' are listed, the code will automatically combine the data into one combined spectrum ordered by smallest to largest wavelength before performing the fit.
 
@@ -145,7 +144,7 @@ This section contains additional parameters for customizing the fitting process.
 
 ---
 *See pPXF documentation for further explanation on these parameters.<br>
-**Computationally intensive and generally unnecessary
+**Computationally intensive and generally unnecessary.
 
 ## Spectral Fitting Parameters - Recommended
 
@@ -155,3 +154,18 @@ These are the parameters I recommend focusing on as they tend to have the greate
 - **start_gas**: Initial guess for the parameters (V, sigma) for the gas component.  
 - **Degree**: Degree of the additive Legendre polynomial used to correct the template continuum shape during the fit.  
 - **Linear**: Keeps all nonlinear parameters fixed and only performs a linear least-squares routine for the templates and additive polynomial weights.
+
+## How to Access Full Suite of Libraries (STARBURST99 AND BPASS) using GIT LFS
+After following the installation instructions you will have automatic access to the sample libraries located in the GalSpecFitX subfolder ``sample_libraries``. The sample libraries provided are the Starburst99 Geneva High evolutionary track, Salpeter IMF for instantaneous star formation models (see ), and BPASS Salpeter IMF single star formation models. The provided config.ini file uses these libraries by default by setting lib_path to None.
+
+### <u>All Available libraries</u>
+
+A full suite of STARBURST99 and BPASS are currently available, and are provided in the root directory of the repository. The table below identifies the full criteria and keywords for selecting a library a set of models in your configuration file based on parameters such as evolutionary track, IMF slopes, and type of star formation.
+
+For Starburst99:
+
+| **Evolutionary Track**                              | **Star Formation**     | **Initial Mass Function (IMF) Slopes** |
+|-----------------------------------------------------|------------------------|----------------------------------------|
+| geneva_high<br> GENEVA TRACKS WITH HIGH MASS LOSS   | inst<br> Instantaneous | salpeter<br> kroupa<br>                |
+
+
