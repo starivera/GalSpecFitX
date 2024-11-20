@@ -169,10 +169,12 @@ For Starburst99:
 |------------------------------------------------------|----------------------------------|-----------------------------------|
 | `geneva_high` -> Geneva tracks with high mass loss   | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       |
 
+For further explanation of these choices see: https://massivestars.stsci.edu/starburst99/docs/run.html#IZ
+
 For BPASS:
 
 | **Star Formation (`star_form`)** | **Initial Mass Function (`IMF`)** |
 |----------------------------------|-----------------------------------|
 | `single`<br> `binary`            | `imf_chab100`<br> `imf_chab300`<br> `imf100_100`<br> `imf100_300`<br> `imf135_100`<br>  `imf135_300`<br> `imf135all_100`<br> `imf170_100`<br> `imf170_300`<br> |
 
-
+For further explanation of these choices see: https://livewarwickac.sharepoint.com/sites/Physics-BinaryPopulationandSpectralSynthesisBPASS/Shared%20Documents/Forms/AllItems.aspx?ga=1&id=%2Fsites%2FPhysics%2DBinaryPopulationandSpectralSynthesisBPASS%2FShared%20Documents%2FBPASS%5Fv2%2E2%5Frelease%2FBPASS%20v2%2E2%2E1%20full%20release%2FBPASSv2%2E2%2E1%5FManual%2Epdf&viewid=141639b8%2D0962%2D4a5a%2Db1e4%2D8977a94c88eb&parent=%2Fsites%2FPhysics%2DBinaryPopulationandSpectralSynthesisBPASS%2FShared%20Documents%2FBPASS%5Fv2%2E2%5Frelease%2FBPASS%20v2%2E2%2E1%20full%20release
