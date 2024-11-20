@@ -189,4 +189,4 @@ Next, run ```git lfs install``` to initialize it.
 
 Now you can download the models by running ```git lfs pull``` in the directory containing full_suite. WARNING: These libraries are LARGE, so if you would like to store the libraries somewhere with more storage space feel free to move the `full_suite` folder after downloading them.
 
-Finally, all that needs to be done to start using the full_suite is to direct the code to the directory via the `lib_path` parameter of your configuration file (e.g. lib_path=/path/to/full_suite).
+Finally, all that needs to be done to start using the full_suite is to direct the code to the directory via the `lib_path` parameter of your configuration file (e.g. lib_path=/path/to/full_suite). Now, you can explore all the models by choosing parameters based on the **All Available Libraries** section directly above.
