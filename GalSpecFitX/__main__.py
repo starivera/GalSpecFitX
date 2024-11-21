@@ -133,7 +133,8 @@ def main() -> None:
     input_path     = args.input_path
     config_file    = args.config_file
     output_path    = args.output_path
-    output_path = output_path if output_path else input_path if input_path else os.getcwd()
+    input_path = input_path if input_path else os.getcwd()
+    output_path = output_path if output_path else input_path
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
@@ -231,7 +232,7 @@ def main() -> None:
     processed_segments = []
 
     for segment in segments:
-        base_spectrum = GalaxySpectrum(gal_filename, segment, use_hst_cos)
+        base_spectrum = GalaxySpectrum(input_path+'/'+gal_filename, segment, use_hst_cos)
         operations = [
             DeRedshiftOperation(z_guess),
             BinningOperation(bin_width),
