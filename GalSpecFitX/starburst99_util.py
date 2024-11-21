@@ -31,7 +31,7 @@ def age_metal(filename):
     """
     s = re.findall(r'Z[m|p][0-9]\.[0-9]{3}T[0-9]\.[0-9]{5}', filename)[0]
     metal = s[:7]
-    # print(metal)
+
     age = float(s[8:])
     if "Zm" in metal:
         metal = -float(metal[2:])
@@ -168,8 +168,6 @@ class starburst:
         cenwave_range_temp[:-1] = (lam_range_temp[1:] + lam_range_temp[:-1]) / 2
 
         cenwave_range_temp[-1] = lam_range_temp[-1] + ((lam_range_temp[-1] - lam_range_temp[-2]) / 2)
-        print('original wavelength array', lam_range_temp)
-        print('cenwaves', cenwave_range_temp)
 
         ssp_new, ln_lam_temp = util.log_rebin(cenwave_range_temp, ssp, velscale=velscale)[:2]
 
@@ -208,7 +206,7 @@ class starburst:
                             ssp = ndimage.gaussian_filter1d(ssp, sigma)
                     else:
                         ssp = util.gaussian_filter1d(ssp, sigma)  # convolution with variable sigma
-                # print(files[p], cenwave_range_temp.shape, ssp.shape)
+
                 ssp_new = util.log_rebin(cenwave_range_temp, ssp, velscale=velscale)[0]
 
                 templates[:, j, k] = ssp_new
@@ -255,7 +253,6 @@ class starburst:
         # Convert age grid to Myr
         xgrid = self.age_grid * 1e3
         ygrid = self.metal_grid
-        print(xgrid, ygrid, weights)
 
         # Creating the bar chart
         fig, ax = plt.subplots()
@@ -289,7 +286,7 @@ class starburst:
 
         # Calculate mean metallicity and reddening text
         mean_z = np.average(unique_metals, weights=weights.sum(axis=0))
-        ax.text(4, 0.9, f'<Z> = {(mean_z/z_sol):.2f} * Zsol', verticalalignment='center', horizontalalignment='left', fontsize=10)
+        ax.text(4, 0.6, f'<Z> = {(mean_z/z_sol):.2f} * Zsol', verticalalignment='center', horizontalalignment='left', fontsize=10)
 
         # Set axis labels and legend
         ax.set_xlabel('Stellar population Age (Myr)')

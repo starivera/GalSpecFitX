@@ -185,9 +185,9 @@ def main() -> None:
     elif evol_track is not None and library_name != 'STARBURST99':
         logging.info("evol_track parameter can only be used with Starburst99 and will therefore be ignored.")
 
-    imf = library['IMF']
+    imf = library['IMF'].lower()
 
-    star_form = library['star_form']
+    star_form = library['star_form'].lower()
 
     age_min = get_optional_config(library, 'age_min', default=None, convert_to=float)
 
@@ -269,7 +269,7 @@ def main() -> None:
         processor_config['mask'] = processor.mask_spectral_lines(R, n_pix = (3,3))
 
     if library_name == 'STARBURST99':
-        library_handler = StarburstLibraryHandler(lib_path, evol_track)
+        library_handler = StarburstLibraryHandler(imf, star_form, lib_path, evol_track)
     elif library_name == 'BPASS':
         library_handler = BPASSLibraryHandler(imf, star_form, lib_path)
 
