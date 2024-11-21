@@ -166,25 +166,21 @@ class LibraryHandler(ABC):
 
 class StarburstLibraryHandler(LibraryHandler):
 
-    def __init__(self, lib_path: str, evol_track: str):
-        import starburst_util as lib  # Import the library only if using this handler
+    def __init__(self, IMF_slope: str, star_form: str, lib_path: str, evol_track: str):
+        import GalSpecFitX.starburst99_util as lib  # Import the library only if using this handler
         self.lib = lib
+        self.IMF_slope = IMF_slope
+        self.star_form = star_form
         self.lib_path = lib_path
         self.evol_track = evol_track
 
 
     def retrieve_templates(self, velscale: float, age_range: List[float]) -> Tuple[np.ndarray, Tuple[int, ...], np.ndarray, np.ndarray]:
 
-        # ppxf_dir = os.path.dirname(os.path.realpath(self.lib.__file__))
         pathname = os.path.join(self.lib_path, 'STARBURST99', self.evol_track, self.star_form, self.IMF_slope, '*.fits')
-        starburst_lib = self.lib.starburst(pathname, velscale, self.lib_path, self.evol_track, age_range=age_range)
+        starburst99_lib = self.lib.starburst(pathname, velscale, self.lib_path, self.evol_track, age_range=age_range)
 
-        reg_dim = starburst_lib.templates.shape[1:]
-        stars_templates = starburst_lib.templates.reshape(starburst_lib.templates.shape[0], -1)
-        lam_temp = starburst_lib.lam_temp
-        ln_lam_temp = starburst_lib.ln_lam_temp
-
-        return stars_templates, reg_dim, lam_temp, ln_lam_temp
+        return starburst99_lib
 
 class BPASSLibraryHandler(LibraryHandler):
     """
@@ -199,9 +195,9 @@ class BPASSLibraryHandler(LibraryHandler):
         """
         import GalSpecFitX.bpass_util as lib  # Import only if using this handler
         self.lib = lib
-        self.lib_path = lib_path
         self.IMF_slope = IMF_slope
         self.star_form = star_form
+        self.lib_path = lib_path
 
     def retrieve_templates(self, velscale: float, age_range: List[float]) -> Tuple[np.ndarray, Tuple[int, ...], np.ndarray, np.ndarray]:
         """
