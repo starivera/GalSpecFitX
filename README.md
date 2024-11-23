@@ -5,9 +5,9 @@ This software applies the Penalized PiXel-Fitting method (pPXF) created and dist
 
 ## HOW TO RUN
 1. Clone the GalSpecFitX repository.
-2. In the root directory create a new Conda environment: ```conda env create -n galspecfitx```
-3. Open the GalSpecFitX root directory in your terminal and run ```pip install .``` You should now be able to run the software by calling ```galspecfitx``` from the command line.
-4. Create a directory for your galaxy data and copy over the 'config.ini' file from the GalSpecFitX directory.
+2. In the GalSpecFitX root directory create a new Conda environment: ```conda env create -n galspecfitx```
+3. After creating and activating the environment run ```pip install .``` You should now be able to run the software by calling ```galspecfitx``` from the command line.
+4. Create a directory for your galaxy data and copy over the 'config.ini' file from the GalSpecFitX root directory.
 5. You can use this configuration file as a template and adjust the parameters accordingly (see the Configuration File Parameters and Spectral Fitting Parameters - Recommended sections below).
 6. Command line options:
    ```
