@@ -114,8 +114,8 @@ This section contains additional parameters for customizing the fitting process.
 
 | **Parameter**         | **Type**        | **Description**                                                                                               |
 |-----------------------|-----------------|---------------------------------------------------------------------------------------------------------------|
-| `start_stars`         | None/list       | Initial kinematic parameters (velocity and sigma required) for stars; defaults are used if set to None.       |
-| `start_gas`           | None/list       | Initial kinematic parameters (velocity and sigma required) for gas; defaults are used if set to None.         |
+| `start_stars`         | None/list       | Initial kinematic parameters (velocity and sigma required in km/s) for stars; defaults are used if set to None.       |
+| `start_gas`           | None/list       | Initial kinematic parameters (velocity and sigma required in km/s) for gas; defaults are used if set to None.         |
 | `bias`                | float           | Optional bias term to control fit sensitivity; default is None.*                                              |
 | `bounds_stars`        | None/list       | Parameter bounds (e.g., min and max values) for fitting constraints in start_stars; default is None.          |
 | `bounds_gas`          | None/list       | Parameter bounds (e.g., min and max values) for fitting constraints in start_gas; default is None.            |
@@ -167,7 +167,7 @@ The full suite of libraries although present in the root folder of the repositor
 
 Next, run ```git lfs install``` to initialize it.
 
-Now you can download the models by running ```git lfs pull``` in the directory containing full_suite. WARNING: These libraries are LARGE, so if you would like to store the libraries somewhere with more storage space feel free to move the `full_suite` folder after downloading them.
+Now you can download the models by running ```git lfs pull``` in the directory containing full_suite. **WARNING**: These libraries are LARGE, so if you would like to store the libraries somewhere with more storage space feel free to move the `full_suite` folder after downloading them.
 
 Finally, all that needs to be done to start using the full suite is to direct the code to the directory via the `lib_path` parameter of your configuration file (e.g. lib_path=/path/to/full_suite). Now, you can explore all the models by choosing parameters based on the **All Available Libraries** section directly below.
 
@@ -190,3 +190,17 @@ For BPASS:
 | `single`<br> `binary`            | `imf_chab100`<br> `imf_chab300`<br> `imf100_100`<br> `imf100_300`<br> `imf135_100`<br>  `imf135_300`<br> `imf135all_100`<br> `imf170_100`<br> `imf170_300`<br> |
 
 For further explanation of these choices see the BPASS [manual](https://livewarwickac.sharepoint.com/sites/Physics-BinaryPopulationandSpectralSynthesisBPASS/Shared%20Documents/Forms/AllItems.aspx?ga=1&id=%2Fsites%2FPhysics%2DBinaryPopulationandSpectralSynthesisBPASS%2FShared%20Documents%2FBPASS%5Fv2%2E2%5Frelease%2FBPASS%20v2%2E2%2E1%20full%20release%2FBPASSv2%2E2%2E1%5FManual%2Epdf&viewid=141639b8%2D0962%2D4a5a%2Db1e4%2D8977a94c88eb&parent=%2Fsites%2FPhysics%2DBinaryPopulationandSpectralSynthesisBPASS%2FShared%20Documents%2FBPASS%5Fv2%2E2%5Frelease%2FBPASS%20v2%2E2%2E1%20full%20release).
+
+## <u>Output</u>
+
+Following a run of the GalSpecFitX software, the following outputs are produced:
+
+| **Filename**                  | **Format**      | **Description**                                                                                               |
+|-------------------------------|-----------------|---------------------------------------------------------------------------------------------------------------|
+| `bestfit.fits`                | FITS format     | The continuum of the best fit to your combined galaxy spectrum.      |
+| `fitted_spectrum_static`.     | PNG             | Static plot of the best fitting solution and the residuals.         |
+| `interactive_fitted_spectrum` | HTML            | Interactive plot of the best fitting solution.                                            |
+| `spectral_fitting.log`        | Log File        | Log containing the input configuration file parameters and best fit parameters.         |
+| `light_weights`               | PNG             | The fraction of each model in the best-fit continuum, where model ages are plotted on the x-axis and model metallicities are
+provided in different colors. The best-fit age and metallicity are given in this plot.          |
+| `normalized_log_rebinned_spectrum_*`| PNG and FITS Table  | Plots of the galaxy spectrum after de-redshifting, binning, log-rebinning, and median normalization. The number of files corresponds to the number of segments. FITS tables of these spectra are also appended to your original galaxy spectrum FITS file with names  "PROCESSED_DATA_<segment>".             |
