@@ -241,6 +241,10 @@ def main() -> None:
         ]
         processed_spectrum = ProcessedGalaxySpectrum(base_spectrum, operations)
         processed_data = processed_spectrum.apply_operations()
+
+        # Append the processed spectrum to the FITS file
+        base_spectrum.append_new_table(processed_data)
+
         processed_segments.append(processed_data)
 
         lam_gal_log_rebin, norm_flux_gal_log_rebin, norm_err_gal_log_rebin = processed_data
@@ -261,8 +265,8 @@ def main() -> None:
     # Initialize SpectrumProcessor for combining and fitting
     processor = SpectrumProcessor(processor_config, processed_segments)
 
-    # Call mask_spectral_lines with rest_wavelengths from processor_config
-    if processor_config['rest_wavelengths'] is not None:
+    # Call mask_spectral_lines if aborption wavelengths are provided
+    if processor_config['absorp_waves'] is not None:
 
         assert instrument['R'].lower() != "none", "Must provide resolving power to use spectral line masking."
 
