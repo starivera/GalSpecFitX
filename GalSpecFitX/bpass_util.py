@@ -272,6 +272,8 @@ class bpass:
         assert self.age_grid.shape == self.metal_grid.shape == weights.shape, \
             "Input weight dimensions do not match"
 
+        assert np.any(weights > 0), "All weights are zero or empty."
+
         # Convert age grid to Myr
         xgrid = self.age_grid * 1e3
         ygrid = self.metal_grid
@@ -299,21 +301,35 @@ class bpass:
             age_for_metal = xgrid[metal_mask]  # Ages corresponding to the current metallicity
             weight_for_metal = weights[metal_mask]  # Weights for the current metallicity
 
-            ax.bar(age_for_metal, weight_for_metal, width=1.0, color=colors[i], bottom=bottoms, label=f"{unique_metals[i]/z_sol} * Zsol")
+            # Plot bars
+            ax.bar(
+                age_for_metal,
+                weight_for_metal,
+                width=(np.max(unique_ages) - np.min(unique_ages)) / len(unique_ages) * 0.8,
+                color=colors[i],
+                bottom=bottoms,
+                label=f"{unique_metals[i]/z_sol:.2f} * Zsol"
+            )
             bottoms += weight_for_metal
 
         # Calculate and plot mean age line
         mean_age = np.average(unique_ages, weights=weights.sum(axis=1))
         ax.axvline(mean_age, color='k', linestyle='--', linewidth=1.5)
-        ax.text(mean_age + 1, 0.9, f'<Age> = {mean_age:.2f}', verticalalignment='center', horizontalalignment='right', fontsize=10)
+        ax.text(
+            mean_age + 1, 0.9, f'<Age> = {mean_age:.2f}',
+            verticalalignment='center', horizontalalignment='right', fontsize=10
+        )
 
-        # Calculate mean metallicity and reddening text
+        # Calculate mean metallicity and display text
         mean_z = np.average(unique_metals, weights=weights.sum(axis=0))
-        ax.text(4, 0.5, f'<Z> = {(mean_z/z_sol):.2f} * Zsol', verticalalignment='center', horizontalalignment='left', fontsize=10)
+        ax.text(
+            np.min(unique_ages) + 1, 0.5, f'<Z> = {(mean_z/z_sol):.2f} * Zsol',
+            verticalalignment='center', horizontalalignment='left', fontsize=10
+        )
 
         # Set axis labels and legend
         ax.set_xlabel('Stellar population Age (Myr)')
         ax.set_ylabel('Light fraction')
-        ax.set_xlim(0, np.max(xgrid) + 5)
+        ax.set_xlim(np.min(unique_ages) - 1, np.max(unique_ages) + 1)
         ax.set_ylim(0, 1)
         ax.legend(loc='upper right')
