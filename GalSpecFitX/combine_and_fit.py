@@ -4,10 +4,12 @@ This script runs the spectral fitting algorithm pPXF.
 
 Author: Isabel Rivera
 """
-import numpy as np
-from typing import List, Tuple, Optional, Dict
-import matplotlib.pyplot as plt
 import os
+from astropy.table import Table
+from astropy.io import fits
+import numpy as np
+import matplotlib.pyplot as plt
+from typing import List, Tuple, Optional, Dict
 import logging
 from abc import ABC, abstractmethod
 from lmfit.models import GaussianModel
@@ -345,6 +347,23 @@ class TemplateRetrieval:
                   reg_dim=reg_dim, component=component, gas_component=gas_component, gas_names=gas_names,
                   **kwargs)
 
+
+        # Assuming pp.bestfit is a 1D array-like object
+        table = Table([pp.bestfit], names=('flux',))
+
+        # Convert the table to a FITS Binary Table HDU
+        hdu1 = fits.BinTableHDU(table, name='BESTFIT')
+
+        # Create a Primary HDU with no data
+        primary_hdu = fits.PrimaryHDU()
+
+        # Create an HDU list with the primary HDU and the table HDU
+        hdul = fits.HDUList([primary_hdu, hdu1])
+
+        # Write the HDU list to a new FITS file
+        hdul.writeto('bestfit.fits', overwrite=True)
+
+
         # Create the Matplotlib figure
         fig, ax = plt.subplots(figsize=(11, 5))
         pp.plot()
@@ -399,14 +418,14 @@ class SpectrumProcessor:
 
             logging.info('mask before adding milky way lines is: \n {}'.format(self.config['mask']))
 
-            for rest_wavelength in self.config['rest_wavelengths']:
+            for absorp_wave in self.config['absorp_waves']:
 
-                mask = (lam_gal_log_rebin > (rest_wavelength-n_pix[0])) & (lam_gal_log_rebin < (rest_wavelength+n_pix[1]))
+                mask = (lam_gal_log_rebin > (absorp_wave-n_pix[0])) & (lam_gal_log_rebin < (absorp_wave+n_pix[1]))
                 # print('mask',mask)
                 # print('wavelength array', lam_gal_log_rebin)
                 wavelength = lam_gal_log_rebin[mask]
 
-                logging.info(f'wavelength range for milky way line at {rest_wavelength}: {wavelength}')
+                logging.info(f'wavelength range for milky way line at {absorp_wave}: {wavelength}')
 
                 if wavelength.size > 0:
 
@@ -416,7 +435,7 @@ class SpectrumProcessor:
 
                     sigma_inst = SPEED_OF_LIGHT/(R*2.355)
 
-                    velocity = (wavelength - rest_wavelength) / rest_wavelength * SPEED_OF_LIGHT
+                    velocity = (wavelength - absorp_wave) / absorp_wave * SPEED_OF_LIGHT
                     # print('velocity', velocity)
 
                     # Step 4: Create lmfit model and set initial parameters
@@ -444,17 +463,17 @@ class SpectrumProcessor:
 
                     fwhm_velocity = result.params['fwhm'].value  # FWHM in km/s
 
-                    fwhm_wavelength = fwhm_velocity * rest_wavelength / SPEED_OF_LIGHT
+                    fwhm_wavelength = fwhm_velocity * absorp_wave / SPEED_OF_LIGHT
 
                     if self.config['mask'] == None:
-                        self.config['mask'] = [(rest_wavelength-fwhm_wavelength, rest_wavelength+fwhm_wavelength)]
+                        self.config['mask'] = [(absorp_wave-fwhm_wavelength, absorp_wave+fwhm_wavelength)]
 
                     else:
                         try:
-                            self.config['mask'].append((rest_wavelength-fwhm_wavelength, rest_wavelength+fwhm_wavelength))
+                            self.config['mask'].append((absorp_wave-fwhm_wavelength, absorp_wave+fwhm_wavelength))
                         except AttributeError:
                             self.config['mask'] = [self.config['mask']]
-                            self.config['mask'].append((rest_wavelength-fwhm_wavelength, rest_wavelength+fwhm_wavelength))
+                            self.config['mask'].append((absorp_wave-fwhm_wavelength, absorp_wave+fwhm_wavelength))
 
 
                     # Print the fitting result
@@ -467,8 +486,8 @@ class SpectrumProcessor:
                     fig.add_trace(go.Scatter(x=wavelength, y=spectrum, mode='lines', name='Original Spectrum'))
                     fig.add_trace(go.Scatter(x=wavelength, y=result.best_fit, mode='lines', name='Fitted Gaussian', line=dict(dash='dash')))
                     fig.add_trace(go.Scatter(x=wavelength, y=spectrum_corrected, mode='lines', name='Corrected Spectrum'))
-                    fig.add_trace(go.Scatter(x=[rest_wavelength, rest_wavelength], y=[np.min(spectrum_corrected), np.max(spectrum_corrected)],
-                                             mode='lines', name=f'{rest_wavelength}', line=dict(color='red', dash='dot')))
+                    fig.add_trace(go.Scatter(x=[absorp_wave, absorp_wave], y=[np.min(spectrum_corrected), np.max(spectrum_corrected)],
+                                             mode='lines', name=f'{absorp_wave}', line=dict(color='red', dash='dot')))
 
                     # Update layout
                     fig.update_layout(
@@ -480,7 +499,7 @@ class SpectrumProcessor:
                     )
 
                     # Save the interactive plot as an HTML file
-                    fig.write_html(os.path.join(self.config['output_path'], f'normalized_log_rebinned_spectrum_{segment}_{rest_wavelength}_interactive.html'), auto_open=False)
+                    fig.write_html(os.path.join(self.config['output_path'], f'{segment}_{absorp_wave}_masked.html'), auto_open=False)
 
 
                 logging.info('mask is now \n {}'.format(self.config['mask']))
@@ -555,7 +574,7 @@ class SpectrumProcessor:
         # Step 6: Fit the spectrum using pPXF
         fit_kwargs = {
             key: value for key, value in self.config.items()
-            if key not in ['age_range', 'start_stars', 'start_gas', 'FWHM_gal', 'output_path', 'rest_wavelengths', 'segments', 'default_noise', 'dust_stars', 'dust_gas', 'bounds_stars', 'bounds_gas', 'fixed_stars', 'fixed_gas'
+            if key not in ['age_range', 'start_stars', 'start_gas', 'FWHM_gal', 'output_path', 'absorp_waves', 'segments', 'default_noise', 'dust_stars', 'dust_gas', 'bounds_stars', 'bounds_gas', 'fixed_stars', 'fixed_gas'
             ]
         }
 
