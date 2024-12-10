@@ -86,14 +86,14 @@ This section contains general settings related to the galaxy data processing.
 | `z_guess`         | float  | Initial guess for the redshift of the galaxy.                               |
 
 ### 2. Instrument Section
-This section contains information about the instrument used for the observations.
+This section contains information about the instrument used for the observations. Note: These parameters do not affect the continuum fit; they are exclusively used for emission line fitting and the absorption masking feature.
 
 | Parameter         | Type   | Description                                                                 |
 |-------------------|--------|-----------------------------------------------------------------------------|
-| `FWHM_gal`        | float  | Full width at half maximum (FWHM) for the galaxy spectrum (in Angstroms).   |
+| `FWHM_gal`        | float  | Spectral resolution full width at half maximum (FWHM) in Angstroms.         |
 | *or the following three parameters if `FWHM_gal` is not provided:*                                       |
-| `instr_lam_min`   | float  | Minimum wavelength of the instrument (in microns).                          |
-| `instr_lam_max`   | float  | Maximum wavelength of the instrument (in microns).                           |
+| `instr_lam_min`   | float  | Minimum wavelength of the instrument in microns.                            |
+| `instr_lam_max`   | float  | Maximum wavelength of the instrument in microns.                            |
 | `R`               | float  | Resolving power of the instrument.                                          |
 
 ### 3. Library Section
@@ -136,7 +136,7 @@ This section contains additional parameters for customizing the fitting process.
 | `method`              | str             | Algorithm to perform the non-linear minimization step (options vary based on pPXF settings); default is `capfit`. |
 | `mdegree`             | int             | Degree of multiplicative polynomial for continuum fitting; default is 0.                                      |
 | `quiet`               | bool            | Suppresses verbose output of the best fitting parameters at the end of the fit if True; default is False.     |
-| `rest_wavelengths`    | None/list       | Absorption line central wavelengths for milky way line masking; default is None.                              |
+| `absorp_lam`          | None/list       | Absorption line central wavelengths for milky way line masking; default is None.                              |
 | `sigma_diff`          | float           | Quadratic difference in km/s defined as: ```sigma_diff**2 = sigma_inst**2 - sigma_temp**2``` between the instrumental dispersion of the galaxy spectrum and the instrumental dispersion of the template spectra.                                                |
 | `trig`                | bool            | Enables trigonometric series as an alternative to Legendre polynomials, for both the additive and multiplicative polynomials if True; default is False. |
 | `vsyst`               | float           | Reference velocity in ``km/s``; default is 0.0. Output will be w.r.t. this velocity.                                                             |

@@ -266,7 +266,7 @@ def main() -> None:
     processor = SpectrumProcessor(processor_config, processed_segments)
 
     # Call mask_spectral_lines if aborption wavelengths are provided
-    if processor_config['absorp_waves'] is not None:
+    if processor_config['absorp_lam'] is not None:
 
         assert instrument['R'].lower() != "none", "Must provide resolving power to use spectral line masking."
 
