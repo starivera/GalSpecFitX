@@ -418,14 +418,14 @@ class SpectrumProcessor:
 
             logging.info('mask before adding milky way lines is: \n {}'.format(self.config['mask']))
 
-            for absorp_wave in self.config['absorp_waves']:
+            for absorp_lam in self.config['absorp_lam']:
 
-                mask = (lam_gal_log_rebin > (absorp_wave-n_pix[0])) & (lam_gal_log_rebin < (absorp_wave+n_pix[1]))
+                mask = (lam_gal_log_rebin > (absorp_lam-n_pix[0])) & (lam_gal_log_rebin < (absorp_lam+n_pix[1]))
                 # print('mask',mask)
                 # print('wavelength array', lam_gal_log_rebin)
                 wavelength = lam_gal_log_rebin[mask]
 
-                logging.info(f'wavelength range for milky way line at {absorp_wave}: {wavelength}')
+                logging.info(f'wavelength range for milky way line at {absorp_lam}: {wavelength}')
 
                 if wavelength.size > 0:
 
@@ -435,7 +435,7 @@ class SpectrumProcessor:
 
                     sigma_inst = SPEED_OF_LIGHT/(R*2.355)
 
-                    velocity = (wavelength - absorp_wave) / absorp_wave * SPEED_OF_LIGHT
+                    velocity = (wavelength - absorp_lam) / absorp_lam * SPEED_OF_LIGHT
                     # print('velocity', velocity)
 
                     # Step 4: Create lmfit model and set initial parameters
@@ -463,17 +463,17 @@ class SpectrumProcessor:
 
                     fwhm_velocity = result.params['fwhm'].value  # FWHM in km/s
 
-                    fwhm_wavelength = fwhm_velocity * absorp_wave / SPEED_OF_LIGHT
+                    fwhm_wavelength = fwhm_velocity * absorp_lam / SPEED_OF_LIGHT
 
                     if self.config['mask'] == None:
-                        self.config['mask'] = [(absorp_wave-fwhm_wavelength, absorp_wave+fwhm_wavelength)]
+                        self.config['mask'] = [(absorp_lam-fwhm_wavelength, absorp_lam+fwhm_wavelength)]
 
                     else:
                         try:
-                            self.config['mask'].append((absorp_wave-fwhm_wavelength, absorp_wave+fwhm_wavelength))
+                            self.config['mask'].append((absorp_lam-fwhm_wavelength, absorp_lam+fwhm_wavelength))
                         except AttributeError:
                             self.config['mask'] = [self.config['mask']]
-                            self.config['mask'].append((absorp_wave-fwhm_wavelength, absorp_wave+fwhm_wavelength))
+                            self.config['mask'].append((absorp_lam-fwhm_wavelength, absorp_lam+fwhm_wavelength))
 
 
                     # Print the fitting result
@@ -486,8 +486,8 @@ class SpectrumProcessor:
                     fig.add_trace(go.Scatter(x=wavelength, y=spectrum, mode='lines', name='Original Spectrum'))
                     fig.add_trace(go.Scatter(x=wavelength, y=result.best_fit, mode='lines', name='Fitted Gaussian', line=dict(dash='dash')))
                     fig.add_trace(go.Scatter(x=wavelength, y=spectrum_corrected, mode='lines', name='Corrected Spectrum'))
-                    fig.add_trace(go.Scatter(x=[absorp_wave, absorp_wave], y=[np.min(spectrum_corrected), np.max(spectrum_corrected)],
-                                             mode='lines', name=f'{absorp_wave}', line=dict(color='red', dash='dot')))
+                    fig.add_trace(go.Scatter(x=[absorp_lam, absorp_lam], y=[np.min(spectrum_corrected), np.max(spectrum_corrected)],
+                                             mode='lines', name=f'{absorp_lam}', line=dict(color='red', dash='dot')))
 
                     # Update layout
                     fig.update_layout(
@@ -499,7 +499,7 @@ class SpectrumProcessor:
                     )
 
                     # Save the interactive plot as an HTML file
-                    fig.write_html(os.path.join(self.config['output_path'], f'{segment}_{absorp_wave}_masked.html'), auto_open=False)
+                    fig.write_html(os.path.join(self.config['output_path'], f'{segment}_{absorp_lam}_masked.html'), auto_open=False)
 
 
                 logging.info('mask is now \n {}'.format(self.config['mask']))
@@ -574,7 +574,7 @@ class SpectrumProcessor:
         # Step 6: Fit the spectrum using pPXF
         fit_kwargs = {
             key: value for key, value in self.config.items()
-            if key not in ['age_range', 'start_stars', 'start_gas', 'FWHM_gal', 'output_path', 'absorp_waves', 'segments', 'default_noise', 'dust_stars', 'dust_gas', 'bounds_stars', 'bounds_gas', 'fixed_stars', 'fixed_gas'
+            if key not in ['age_range', 'start_stars', 'start_gas', 'FWHM_gal', 'output_path', 'absorp_lam', 'segments', 'default_noise', 'dust_stars', 'dust_gas', 'bounds_stars', 'bounds_gas', 'fixed_stars', 'fixed_gas'
             ]
         }
 
