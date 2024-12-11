@@ -45,9 +45,9 @@ def read_config(filename: str, input_path: str) -> configparser.ConfigParser:
         raise ValueError(f"Error parsing the configuration file: {e}")
 
     required_sections = ['Settings', 'instrument', 'library', 'fit']
-    for section in required_sections:
-        if section not in config:
-            raise KeyError(f"Missing required section '{section}' in the configuration file.")
+    missing_sections = [section for section in required_sections if section not in config]
+    if missing_sections:
+        raise KeyError(f"Missing required sections in the configuration file: {', '.join(missing_sections)}")
 
     return config
 
@@ -97,19 +97,27 @@ def configure_logging(filename: str) -> None:
     except Exception as e:
         logging.exception(f"Failed to configure logging: {e}")
 
-class Logger(object):
+class Logger:
     def __init__(self, filename="logfile.log"):
         self.terminal = sys.stdout
-        self.log = open(filename, "a")
+        self.log_file = open(filename, "a")
 
     def write(self, message):
         self.terminal.write(message)
-        self.log.write(message)
-        self.log.flush()  # Ensure the log file is updated immediately
+        self.log_file.write(message)
+        self.log_file.flush()  # Ensure immediate writing to the log file
 
     def flush(self):
         self.terminal.flush()
-        self.log.flush()
+        self.log_file.flush()
+
+    def __enter__(self):
+        # Context management setup
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Automatically close the log file when exiting the context
+        self.log_file.close()
 
 def get_optional_config(section, key, default=None, convert_to=None):
     value = section.get(key, default)
@@ -119,7 +127,10 @@ def get_optional_config(section, key, default=None, convert_to=None):
             value=None
 
         else:
-            value = convert_to(value)
+            try:
+                value = convert_to(value)
+            except Exception as e:
+                raise ValueError(f"Failed to convert value '{value}' for key '{key}' in section '{section.name}': {e}")
 
     return value
 
@@ -251,15 +262,15 @@ def main() -> None:
 
         # Plot normalized log-binned spectrum
         plt.figure(figsize=(10, 5))
-        plt.plot(lam_gal_log_rebin, norm_flux_gal_log_rebin, label='Median Normalized Log-rebinned spectrum')
-        plt.plot(lam_gal_log_rebin, norm_err_gal_log_rebin, linestyle='None', marker='.', label='Error of Median Normalized Log-rebinned spectrum')
-        plt.title(f'{gal_filename} - Normalized Log-Rebinned Spectrum')
+        plt.plot(lam_gal_log_rebin, norm_flux_gal_log_rebin, label=f'{segment} spectrum')
+        plt.plot(lam_gal_log_rebin, norm_err_gal_log_rebin, linestyle='None', marker='.', label='Error')
+        plt.title(f'{gal_filename} - Deredshifted, SpectRes Binned, Log-Rebinned, Median Normalized Spectrum')
         plt.xlabel('Rest Wavelength (Å)')
         plt.ylabel('Median Normalized Flux')
         plt.legend()
         plt.grid(alpha=0.5)
         # plt.ylim(0.1, 1.6)
-        plt.savefig(os.path.join(output_path, f'normalized_log_rebinned_spectrum_{segment}.png'))  # Save the figure to a file
+        plt.savefig(os.path.join(output_path, f'normalized_log_rebinned_spectrum_{segment}.png'), dpi=150)  # Save the figure to a file
         plt.close()
 
     # Initialize SpectrumProcessor for combining and fitting
@@ -278,9 +289,10 @@ def main() -> None:
     elif library_name == 'BPASS':
         library_handler = BPASSLibraryHandler(imf, star_form, lib_path)
 
-    sys.stdout = Logger(log_filename)
-    processor.process_combined_spectrum(library_handler)
-    sys.stdout = sys.stdout.terminal
+    with Logger(log_filename) as logger:
+        sys.stdout = logger
+        processor.process_combined_spectrum(library_handler)
+        sys.stdout = sys.stdout.terminal  # Restore the original stdout
 
 if __name__ == '__main__':
     main()
