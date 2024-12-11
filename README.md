@@ -130,7 +130,7 @@ This section contains additional parameters for customizing the fitting process.
 | `fraction`            | float           | Ratio between stars and gas component.*                                                                        |
 | `ftol`                | float           | Tolerance level for fit convergence; default is 1e-4.                                                         |
 | `global_search`**     | bool or dict    | Enables global optimization of the nonlinear parameters (kinematics) before starting the usual local optimizer.if True; default is False. |
-| `linear`              | bool            | Uses linear fitting only if True; default is False.                                                           |
+| `linear`              | bool            | Only performs linear fitting if set to True; default is False.                                                           |
 | `linear_method`       | str             | Method for linear fitting (options vary based on pPXF settings); default is `lsq_box`.                        |
 | `mask`                | None/list       | List of wavelength ranges to exclude from fit; default is None (e.g. [[lam_i1, lam_f1], [lami2, lamf2], ...]                                              |
 | `method`              | str             | Algorithm to perform the non-linear minimization step (options vary based on pPXF settings); default is `capfit`. |
@@ -151,10 +151,10 @@ This section contains additional parameters for customizing the fitting process.
 
 These are the parameters I recommend focusing on as they tend to have the greatest influence on the quality of the fit:
 
-- **start_stars**: Initial guess for the parameters (V, sigma) for the stars component.  
-- **start_gas**: Initial guess for the parameters (V, sigma) for the gas component.  
-- **Degree**: Degree of the additive Legendre polynomial used to correct the template continuum shape during the fit.  
-- **Linear**: Keeps all nonlinear parameters fixed and only performs a linear least-squares routine for the templates and additive polynomial weights.
+- **start_stars**: Initial guess for the LOSVD parameters (V, sigma, ...) for the stars component.  
+- **start_gas**: Initial guess for the LOSVD parameters (V, sigma, ...) for the gas component.  
+- **Degree**: Degree of the additive Legendre polynomial used to correct the template continuum shape during the fit. Set ``degree=-1`` to not include any additive polynomial. 
+- **Linear**: If set to True only performs a linear least-squares routine for the templates and additive polynomial weights.
 
 ## Accessing the Starburst99 and BPASS Libraries
 After following the installation instructions you will have automatic access to the sample libraries located in the GalSpecFitX subfolder ``sample_libraries``. The sample libraries provided are the Starburst99 Geneva High evolutionary track, Salpeter IMF for instantaneous star formation models, and BPASS Salpeter IMF (`imf135all_100`) single star formation models. The provided config.ini file uses these libraries by default by setting the `lib_path` parameter to None.
