@@ -198,7 +198,7 @@ Following a run of the GalSpecFitX software, the following outputs are produced:
 | **Filename**                         | **Format**          | **Description**                                                                                               |
 |--------------------------------------|---------------------|---------------------------------------------------------------------------------------------------------------|
 | `bestfit.fits`                       | FITS format         | The galaxy spectrum after de-redshifting, binning, log-rebinning, and median normalization. The number of extensions corresponds to the number of segments with names  `PROCESSED_DATA_<segment>`. The last extension contains the best fitting continuum to your combined galaxy spectrum with the name `BESTFIT`.      |
-| `fitted_spectrum_static`.            | PNG                 | Static plot of the best fitting solution and the residuals.         |
+| `fitted_spectrum_static`             | PNG                 | Static plot of the best fitting solution and residuals.         |
 | `interactive_fitted_spectrum`        | HTML                | Interactive plot of the best fitting solution.                                            |
 | `light_weights`                      | PNG                 | The fraction of each model in the best-fit continuum, where model ages are plotted on the x-axis and model metallicities are provided in different colors. The best-fit age and metallicity are given in this plot.          |
 | `normalized_log_rebinned_spectrum_<segment>` | PNG and FITS Table  | Plots of the galaxy spectrum after de-redshifting, binning, log-rebinning, and median normalization. The number of files corresponds to the number of segments.              |
