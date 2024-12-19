@@ -146,7 +146,7 @@ class InstrumentInfo:
         :return: FWHM of the galaxy spectrum in Angstroms.
         """
         FWHM_gal = 1e4 * np.sqrt(self.instr_lam_min * self.instr_lam_max) / self.R
-        logging.info(f"FWHM_gal: {FWHM_gal:.1f} Å")
+        logging.info(f"FWHM_gal: {FWHM_gal:.5f} Å")
         return FWHM_gal
 
 class LibraryHandler(ABC):
@@ -349,20 +349,14 @@ class TemplateRetrieval:
 
 
         # Assuming pp.bestfit is a 1D array-like object
-        table = Table([pp.bestfit], names=('flux',))
+        bestfit_table = Table([pp.bestfit], names=('flux',))
 
         # Convert the table to a FITS Binary Table HDU
-        hdu1 = fits.BinTableHDU(table, name='BESTFIT')
+        bestfit_hdu = fits.BinTableHDU(bestfit_table, name='BESTFIT')
 
-        # Create a Primary HDU with no data
-        primary_hdu = fits.PrimaryHDU()
-
-        # Create an HDU list with the primary HDU and the table HDU
-        hdul = fits.HDUList([primary_hdu, hdu1])
-
-        # Write the HDU list to a new FITS file
-        hdul.writeto('bestfit.fits', overwrite=True)
-
+        # Open bestfit.fits which should already exist in the output path and append the new table
+        with fits.open(os.path.join(output_path,'bestfit.fits'), mode='append') as hdul:
+            hdul.append(bestfit_hdu)
 
         # Create the Matplotlib figure
         fig, ax = plt.subplots(figsize=(11, 5))
