@@ -254,7 +254,7 @@ def main() -> None:
         processed_data = processed_spectrum.apply_operations()
 
         # Append the processed spectrum to the FITS file
-        base_spectrum.append_new_table(processed_data)
+        base_spectrum.append_new_table(processed_data, output_path)
 
         processed_segments.append(processed_data)
 

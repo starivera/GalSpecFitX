@@ -186,34 +186,38 @@ class GalaxySpectrum:
 
         return wavelengths, fluxes, errors
 
-    def append_new_table(self, spectrum: Tuple[np.ndarray, np.ndarray, np.ndarray]) -> None:
+    def append_new_table(self, spectrum: Tuple[np.ndarray, np.ndarray, np.ndarray], output_path: str) -> None:
         """Append a new table containing spectrum data as a new FITS extension.
 
         Parameters:
         spectrum (Tuple[np.ndarray, np.ndarray, np.ndarray]): The spectrum data to append as (wavelengths, fluxes, errors).
         """
 
+        # Define the spectrum data
         wavelengths, fluxes, errors = spectrum
 
-        # If the HDU for the segment doesn't exist, create a new table and add it to the FITS file
+        # Create a new table for the segment
         new_table = Table(
             [[self.segment], [wavelengths], [fluxes], [errors]],
             names=('SEGMENT', 'WAVELENGTH', 'FLUX', 'ERROR')
         )
         new_hdu = fits.BinTableHDU(new_table, name=f'PROCESSED_DATA_{self.segment}')
 
-        # Open the original FITS file and append the new HDU
-        with fits.open(self.filename) as hdul:
-            new_hdul = fits.HDUList([hdul[0]])  # Include the primary HDU
+        # Check if the file exists
+        file_name = os.path.join(output_path,'bestfit.fits')
+        if os.path.exists(file_name):
+            # Open the existing file and append the new table
+            with fits.open(file_name, mode='append') as hdul:
+                hdul.append(new_hdu)
+        else:
+            # Create a Primary HDU with no data
+            primary_hdu = fits.PrimaryHDU()
 
-            for hdu in hdul[1:]:
-                new_hdul.append(hdu)  # Append the existing HDUs
+            # Create an HDU list with the primary HDU and the new table HDU
+            hdul = fits.HDUList([primary_hdu, new_hdu])
 
-            # Append the new BinTableHDU
-            new_hdul.append(new_hdu)
-
-            # Write the new HDU list to the output file
-            new_hdul.writeto(self.filename, overwrite=True)
+            # Write the HDU list to a new FITS file
+            hdul.writeto(file_name)
 
 
 class ProcessedGalaxySpectrum:

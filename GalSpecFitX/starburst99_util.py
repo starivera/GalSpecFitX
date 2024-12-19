@@ -185,10 +185,10 @@ class starburst:
         # The formula below is rigorously valid if the shapes of the
         # instrumental spectral profiles are well approximated by Gaussians.
         if FWHM_gal is not None:
-            fwhm_diff = (fwhm_gal**2 - fwhm_tem**2).clip(0)
-            if np.any(fwhm_diff == 0):
-                logging.info("WARNING: the template's resolution dlam is larger than the galaxy's")
-            sigma = np.sqrt(fwhm_diff)/np.sqrt(4*np.log(4))
+            FWHM_diff = (FWHM_gal**2 - FWHM_tem**2).clip(0)
+            if np.any(FWHM_diff == 0):
+                print("WARNING: the template's resolution dlam is larger than the galaxy's")
+            sigma = np.sqrt(FWHM_diff)/np.sqrt(4*np.log(4))
 
             # FWHM_dif = np.sqrt(FWHM_gal**2 - FWHM_tem**2)
             # sigma = FWHM_dif/2.355/h2['CDELT1']   # Sigma difference in pixels
