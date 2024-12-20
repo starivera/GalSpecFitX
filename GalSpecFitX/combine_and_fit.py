@@ -155,7 +155,7 @@ class LibraryHandler(ABC):
     """
 
     @abstractmethod
-    def retrieve_templates(self, velscale: float, age_range: List[float]) -> Tuple[np.ndarray, Tuple[int, ...], np.ndarray, np.ndarray]:
+    def retrieve_templates(self, velscale: float, age_range: List[float], FWHM_gal: float) -> Tuple[np.ndarray, Tuple[int, ...], np.ndarray, np.ndarray]:
         """
         Retrieve templates from the library.
 
@@ -177,10 +177,10 @@ class StarburstLibraryHandler(LibraryHandler):
         self.evol_track = evol_track
 
 
-    def retrieve_templates(self, velscale: float, age_range: List[float]) -> Tuple[np.ndarray, Tuple[int, ...], np.ndarray, np.ndarray]:
+    def retrieve_templates(self, velscale: float, age_range: List[float], FWHM_gal: float) -> Tuple[np.ndarray, Tuple[int, ...], np.ndarray, np.ndarray]:
 
         pathname = os.path.join(self.lib_path, 'STARBURST99', self.evol_track, self.star_form, self.IMF_slope, '*.fits')
-        starburst99_lib = self.lib.starburst(pathname, velscale, self.lib_path, self.evol_track, age_range=age_range)
+        starburst99_lib = self.lib.starburst(pathname, velscale, self.lib_path, self.evol_track, age_range=age_range, FWHM_gal=FWHM_gal)
 
         return starburst99_lib
 
@@ -201,7 +201,7 @@ class BPASSLibraryHandler(LibraryHandler):
         self.star_form = star_form
         self.lib_path = lib_path
 
-    def retrieve_templates(self, velscale: float, age_range: List[float]) -> Tuple[np.ndarray, Tuple[int, ...], np.ndarray, np.ndarray]:
+    def retrieve_templates(self, velscale: float, age_range: List[float], FWHM_gal: float) -> Tuple[np.ndarray, Tuple[int, ...], np.ndarray, np.ndarray]:
         """
         Retrieve BPASS templates from the library.
 
@@ -213,12 +213,7 @@ class BPASSLibraryHandler(LibraryHandler):
         # ppxf_dir = os.path.dirname(os.path.realpath(self.lib.__file__))
         pathname = os.path.join(self.lib_path, 'BPASS', self.star_form, self.IMF_slope, '*.fits')
 
-        bpass_lib = self.lib.bpass(pathname, velscale, self.lib_path, age_range=age_range, norm_range="continuum")
-
-        # reg_dim = bpass_lib.templates.shape[1:]
-        # stars_templates = bpass_lib.templates.reshape(bpass_lib.templates.shape[0], -1)
-        # lam_temp = bpass_lib.lam_temp
-        # ln_lam_temp = bpass_lib.ln_lam_temp
+        bpass_lib = self.lib.bpass(pathname, velscale, self.lib_path, age_range=age_range, norm_range="continuum", FWHM_gal=FWHM_gal)
 
         return bpass_lib
 
@@ -238,7 +233,7 @@ class TemplateRetrieval:
         self.gal_spectrum = gal_spectrum
         self.library_handler = library_handler
 
-    def retrieve_spectral_templates(self, age_range: List[float], default_noise: float) -> Tuple[np.ndarray, int, float, Tuple[int, ...], np.ndarray, np.ndarray]:
+    def retrieve_spectral_templates(self, age_range: List[float], default_noise: float, FWHM_gal: float) -> Tuple[np.ndarray, int, float, Tuple[int, ...], np.ndarray, np.ndarray]:
         """
         Retrieve spectral templates from the library.
 
@@ -255,7 +250,7 @@ class TemplateRetrieval:
         velscale = velscale[0]
         logging.info(f"Velocity scale per pixel: {velscale:.2f} km/s")
 
-        library = self.library_handler.retrieve_templates(velscale, age_range)
+        library = self.library_handler.retrieve_templates(velscale, age_range, FWHM_gal)
 
         return library, velscale
 
@@ -516,7 +511,7 @@ class SpectrumProcessor:
 
         # Step 3: Retrieve spectral templates
         age_range = self.config['age_range']
-        library, velscale = template_retrieval.retrieve_spectral_templates(age_range, self.config['default_noise'])
+        library, velscale = template_retrieval.retrieve_spectral_templates(age_range, self.config['default_noise'], self.config['FWHM_gal'])
 
         reg_dim = library.templates.shape[1:]
         stars_templates = library.templates.reshape(library.templates.shape[0], -1)
