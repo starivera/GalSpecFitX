@@ -198,7 +198,7 @@ class bpass:
         if FWHM_gal is not None:
             FWHM_diff = (FWHM_gal**2 - FWHM_tem**2).clip(0)
             if np.any(FWHM_diff == 0):
-                logging.info("WARNING: the template's resolution dlam is larger than the galaxy's")
+                print("WARNING: the template's resolution dlam is larger than the galaxy's")
             sigma = np.sqrt(FWHM_diff)/np.sqrt(4*np.log(4))
 
 
