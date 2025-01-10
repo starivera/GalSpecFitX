@@ -267,7 +267,9 @@ class bpass:
 
 ###############################################################################
 
-    def plot(self, weights, nodots=False, colorbar=True, **kwargs):
+    def plot(self, weights, output_path=None, std_ages=None, std_metallicities=None, plot=True):
+
+        # print('standard deviations', std_ages, std_metallicities)
         assert weights.ndim == 2, "`weights` must be 2-dim"
         assert self.age_grid.shape == self.metal_grid.shape == weights.shape, \
             "Input weight dimensions do not match"
@@ -279,57 +281,67 @@ class bpass:
         ygrid = self.metal_grid
         # print(xgrid, ygrid, weights)
 
-        # Creating the bar chart
-        fig, ax = plt.subplots()
-
         # Get unique ages and metallicities
         unique_ages = np.unique(xgrid)
         unique_metals = np.unique(ygrid)
 
-        # Number of unique metallicities
-        n_metallicities = len(unique_metals)
-
-        # Dynamically generate colors
-        colors = plt.cm.viridis(np.linspace(0, 1, n_metallicities))  # Use colormap for enough colors
-
-        # Initialize bottom positions for the stacked bar chart
-        bottoms = np.zeros(len(unique_ages))
-
-        # Plot for each metallicity
-        for i in range(n_metallicities):
-            metal_mask = ygrid == unique_metals[i]  # Mask for the current metallicity
-            age_for_metal = xgrid[metal_mask]  # Ages corresponding to the current metallicity
-            weight_for_metal = weights[metal_mask]  # Weights for the current metallicity
-
-            # Plot bars
-            ax.bar(
-                age_for_metal,
-                weight_for_metal,
-                width=(np.max(unique_ages) - np.min(unique_ages)) / len(unique_ages) * 0.8,
-                color=colors[i],
-                bottom=bottoms,
-                label=f"{unique_metals[i]/z_sol:.2f} * Zsol"
-            )
-            bottoms += weight_for_metal
-
-        # Calculate and plot mean age line
+        # Calculate mean age
         mean_age = np.average(unique_ages, weights=weights.sum(axis=1))
-        ax.axvline(mean_age, color='k', linestyle='--', linewidth=1.5)
-        ax.text(
-            mean_age + 1, 0.9, f'<Age> = {mean_age:.2f}',
-            verticalalignment='center', horizontalalignment='right', fontsize=10
-        )
 
-        # Calculate mean metallicity and display text
+        # Calculate mean metallicity
         mean_z = np.average(unique_metals, weights=weights.sum(axis=0))
-        ax.text(
-            np.min(unique_ages) + 1, 0.5, f'<Z> = {(mean_z/z_sol):.2f} * Zsol',
-            verticalalignment='center', horizontalalignment='left', fontsize=10
-        )
 
-        # Set axis labels and legend
-        ax.set_xlabel('Stellar population Age (Myr)')
-        ax.set_ylabel('Light fraction')
-        ax.set_xlim(np.min(unique_ages) - 1, np.max(unique_ages) + 1)
-        ax.set_ylim(0, 1)
-        ax.legend(loc='upper right')
+        if plot==True:
+
+            # Creating the bar chart
+            fig, ax = plt.subplots()
+
+            # Number of unique metallicities
+            n_metallicities = len(unique_metals)
+
+            # Dynamically generate colors
+            colors = plt.cm.viridis(np.linspace(0, 1, n_metallicities))  # Use colormap for enough colors
+
+            # Initialize bottom positions for the stacked bar chart
+            bottoms = np.zeros(len(unique_ages))
+
+            # Plot for each metallicity
+            for i in range(n_metallicities):
+                metal_mask = ygrid == unique_metals[i]  # Mask for the current metallicity
+                age_for_metal = xgrid[metal_mask]  # Ages corresponding to the current metallicity
+                weight_for_metal = weights[metal_mask]  # Weights for the current metallicity
+
+                # Plot bars
+                ax.bar(
+                    age_for_metal,
+                    weight_for_metal,
+                    width=(np.max(unique_ages) - np.min(unique_ages)) / len(unique_ages) * 0.8,
+                    color=colors[i],
+                    bottom=bottoms,
+                    label=f"{unique_metals[i]/z_sol:.2f} * Zsol"
+                )
+                bottoms += weight_for_metal
+
+            # Plot mean age line
+            ax.axvline(mean_age, color='k', linestyle='--', linewidth=1.5)
+            ax.text(
+                mean_age + 1, 0.9, f'<Age> = {mean_age:.2f} +/- {std_ages:.5f}',
+                verticalalignment='center', horizontalalignment='right', fontsize=10
+            )
+
+            # Display mean metallicity
+            ax.text(
+                np.min(unique_ages) + 1, 0.5, f'<Z> = ({(mean_z/z_sol):.2f} +/- {std_metallicities:.5f})* Zsol',
+                verticalalignment='center', horizontalalignment='left', fontsize=10
+            )
+
+            # Set title, axis labels and legend
+            plt.title("Light Weights Fractions");
+            ax.set_xlabel('Stellar population Age (Myr)')
+            ax.set_ylabel('Light fraction')
+            ax.set_xlim(np.min(unique_ages) - 1, np.max(unique_ages) + 1)
+            ax.set_ylim(0, 1)
+            ax.legend(loc='upper right')
+            plt.savefig(os.path.join(output_path,'light_weights.png'))
+
+        return mean_age, mean_z
