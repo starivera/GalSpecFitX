@@ -45,7 +45,7 @@ def reddy_attenuation(lam, a_v, delta=None, f_nodust=None, uv_bump=None):
     lam: array_like with shape (n_pixels,)
         Restframe wavelength in Angstroms of each pixel in the galaxy spectrum.
     a_v: float
-        Assumed attenuation of the spectrum, in mag, at 5500 A (V-band).
+        Assumed attenuation of the spectrum, in mag, at 5500 Å (V-band).
     delta: float, optional
         UV slope of the spectrum.
     f_nodust: float, optional
@@ -91,37 +91,6 @@ def reddy_attenuation(lam, a_v, delta=None, f_nodust=None, uv_bump=None):
     return frac     # The model spectrum has to be multiplied by this vector
 
 
-class SegmentCombiner:
-    """
-    Class to combine multiple spectral segments into a single spectrum.
-    """
-
-    def __init__(self, segments: List[Tuple[np.ndarray, np.ndarray, np.ndarray]]):
-        """
-        Initialize with segments to be combined.
-
-        :param segments: List of tuples, each containing arrays of wavelengths, fluxes, and errors.
-        """
-        self.segments = segments
-
-    def combine_segments(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Combine processed segments into a single spectrum, ensuring that the wavelengths, fluxes, and errors are sorted by wavelength.
-
-        :return: Tuple containing arrays of combined wavelengths, fluxes, and errors.
-        """
-        combined_waves = np.concatenate([seg[0] for seg in self.segments])
-        combined_fluxes = np.concatenate([seg[1] for seg in self.segments])
-        combined_errors = np.concatenate([seg[2] for seg in self.segments])
-
-        # Sort by wavelength
-        sorted_indices = np.argsort(combined_waves)
-        combined_waves = combined_waves[sorted_indices]
-        combined_fluxes = combined_fluxes[sorted_indices]
-        combined_errors = combined_errors[sorted_indices]
-
-        return combined_waves, combined_fluxes, combined_errors
-
 class InstrumentInfo:
     """
     Class to handle instrument-related information and calculations.
@@ -131,9 +100,9 @@ class InstrumentInfo:
         """
         Initialize with instrument resolving power and wavelength range.
 
-        :param R: The instrument's resolving power.
-        :param instr_lam_min: Minimum wavelength of the instrument filter for the data (in μm).
-        :param instr_lam_max: Maximum wavelength of the instrument filter for the data (in μm).
+        :param R: The instrument's resolving power (dimensionless).
+        :param instr_lam_min: Minimum wavelength of the instrument filter for the data (in Angstroms, Å).
+        :param instr_lam_max: Maximum wavelength of the instrument filter for the data (in Angstroms, Å).
         """
         self.R = R
         self.instr_lam_min = instr_lam_min
@@ -141,11 +110,14 @@ class InstrumentInfo:
 
     def calc_FWHM_gal(self) -> float:
         """
-        Calculate the spectral resolution FWHM of the galaxy spectrum using the instrument's resolving power and wavelength range.
+        Calculate the spectral resolution FWHM of the galaxy spectrum.
 
-        :return: FWHM of the galaxy spectrum in Angstroms.
+        The FWHM is calculated using the instrument's resolving power `R` and the geometric mean
+        of the minimum and maximum wavelengths of the instrument filter.
+
+        :return: FWHM of the galaxy spectrum in Angstroms (Å).
         """
-        FWHM_gal = 1e4 * np.sqrt(self.instr_lam_min * self.instr_lam_max) / self.R
+        FWHM_gal = np.sqrt(self.instr_lam_min * self.instr_lam_max) / self.R
         logging.info(f"FWHM_gal: {FWHM_gal:.5f} Å")
 
         return FWHM_gal
@@ -157,15 +129,17 @@ class LibraryHandler(ABC):
     """
 
     @abstractmethod
-    def retrieve_templates(self, velscale: float, age_range: List[float], FWHM_gal: float) -> object:
+    def retrieve_templates(self, velscale: float, age_range: List[float], metal_range: List[float], norm_range: List[float], FWHM_gal: float) -> any:
         """
         Retrieve templates from the specific template library.
 
-        :param velscale: Velocity scale per pixel, typically in km/s or similar units.
-        :param age_range: List of two floats representing the age range for the templates to be retrieved (e.g., [age_min, age_max]).
-        :param FWHM_gal: Full Width at Half Maximum (FWHM) of the galaxy's spectral line spread, in km/s or similar units.
+        :param velscale: Velocity scale per pixel in km/s.
+        :param age_range: List of two floats representing the age range in Gyr for the templates to be retrieved `[age_min, age_max]`.
+        :param metal_range: List of two floats representing the metallicity range for the templates to be retrieved `[metal_min, metal_max]` (e.g., 0.020 = Z_solar).
+        :param norm_range: List of two floats representing the wavelength range in Angstroms within which to compute the templates' normalization `[norm_min, norm_max]`.
+        :param FWHM_gal: Full Width at Half Maximum (FWHM) of the galaxy's spectral line spread, in km/s.
 
-        :return: Object containing the requested templates.
+        :return: The retrieved templates. The specific type depends on the implementation.
         """
         pass
 
@@ -192,19 +166,20 @@ class StarburstLibraryHandler(LibraryHandler):
         self.evol_track = evol_track
 
 
-    def retrieve_templates(self, velscale: float, age_range: List[float], FWHM_gal: float) -> object:
+    def retrieve_templates(self, velscale: float, age_range: List[float], metal_range: List[float], norm_range:List[float], FWHM_gal: float) -> any:
         """
         Retrieve the Starburst99 templates based on the specified parameters.
 
-        :param velscale: Velocity scale per pixel, typically in km/s or similar units.
-        :param age_range: List of two floats specifying the age range for the templates (e.g., [age_min, age_max]).
-        :param FWHM_gal: Full Width at Half Maximum (FWHM) of the galaxy's spectral line spread, in km/s or similar units.
+        :param velscale: Velocity scale per pixel in km/s.
+        :param age_range: List of two floats representing the age range in Gyr for the templates to be retrieved `[age_min, age_max]`.
+        :param metal_range: List of two floats representing the metallicity range for the templates to be retrieved `[metal_min, metal_max]` (e.g., 0.020 = Z_solar).
+        :param norm_range: List of two floats representing the wavelength range in Angstroms within which to compute the templates' normalization `[norm_min, norm_max]`.
+        :param FWHM_gal: Full Width at Half Maximum (FWHM) of the galaxy's spectral line spread, in km/s.
 
-        :return: Object containing the requested Starburst99 templates.
+        :return: The retrieved Starburst99 templates.
         """
-
         pathname = os.path.join(self.lib_path, 'STARBURST99', self.evol_track, self.star_form, self.IMF_slope, '*.fits')
-        starburst99_lib = self.lib.starburst(pathname, velscale, self.lib_path, self.evol_track, age_range=age_range, FWHM_gal=FWHM_gal)
+        starburst99_lib = self.lib.starburst(pathname, velscale, self.lib_path, self.evol_track, age_range=age_range, metal_range=metal_range, norm_range=norm_range, FWHM_gal=FWHM_gal)
 
         return starburst99_lib
 
@@ -228,21 +203,20 @@ class BPASSLibraryHandler(LibraryHandler):
         self.star_form = star_form
         self.lib_path = lib_path
 
-    def retrieve_templates(self, velscale: float, age_range: List[float], FWHM_gal: float) -> object:
+    def retrieve_templates(self, velscale: float, age_range: List[float], metal_range: List[float], norm_range: List[float], FWHM_gal: float) -> any:
         """
         Retrieve the BPASS templates based on the specified parameters.
 
-        :param velscale: Velocity scale per pixel, typically in km/s or similar units.
-        :param age_range: List of two floats specifying the age range for the templates (e.g., [age_min, age_max]).
-        :param FWHM_gal: Full Width at Half Maximum (FWHM) of the galaxy's spectral line spread, in km/s or similar units.
+        :param velscale: Velocity scale per pixel in km/s.
+        :param age_range: List of two floats representing the age range in Gyr for the templates to be retrieved `[age_min, age_max]`.
+        :param metal_range: List of two floats representing the metallicity range for the templates to be retrieved `[metal_min, metal_max]` (e.g., 0.020 = Z_solar).
+        :param norm_range: List of two floats representing the wavelength range in Angstroms within which to compute the templates' normalization `[norm_min, norm_max]`.
+        :param FWHM_gal: Full Width at Half Maximum (FWHM) of the galaxy's spectral line spread, in km/s.
 
-        :return: Object containing the requested BPASS templates.
+        :return: The retrieved BPASS templates.
         """
-
-        # ppxf_dir = os.path.dirname(os.path.realpath(self.lib.__file__))
         pathname = os.path.join(self.lib_path, 'BPASS', self.star_form, self.IMF_slope, '*.fits')
-
-        bpass_lib = self.lib.bpass(pathname, velscale, self.lib_path, age_range=age_range, norm_range="continuum", FWHM_gal=FWHM_gal)
+        bpass_lib = self.lib.bpass(pathname, velscale, self.lib_path, age_range=age_range, metal_range=metal_range, norm_range=norm_range, FWHM_gal=FWHM_gal)
 
         return bpass_lib
 
@@ -250,7 +224,7 @@ class BPASSLibraryHandler(LibraryHandler):
 class TemplateRetrieval:
     """
     Class to handle the retrieval of spectral templates, and to run pPXF software.
-    This class manages the retrieval of stellar and gas spectral templates, stacks them, and fits a galaxy spectrum using the pPXF algorithm.
+
     """
 
     def __init__(self, gal_spectrum: Tuple[np.ndarray, np.ndarray, np.ndarray], library_handler: LibraryHandler):
@@ -263,16 +237,19 @@ class TemplateRetrieval:
         self.gal_spectrum = gal_spectrum
         self.library_handler = library_handler
 
-    def retrieve_spectral_templates(self, age_range: List[float], default_noise: float, FWHM_gal: float) -> Tuple[object, float]:
+    def retrieve_spectral_templates(self, age_range: List[float], metal_range: List[float], norm_range: List[float], default_noise: float, FWHM_gal: float) -> Tuple[any, float]:
         """
         Retrieve spectral templates from the library.
 
         This function uses the provided age range, the spectral resolution (FWHM), and galaxy spectrum to retrieve the corresponding stellar templates from a given library.
 
         :param age_range: List specifying the age range for the templates.
+        :param metal_range: List specifying the metalicity range for the templates.
+        :param norm_range: List specifying the normalization range for the templates.
         :param default_noise: Value used to replace zero error values in the galaxy spectrum.
-        :param FWHM_gal: Spectral resolution (Full Width at Half Maximum) of the galaxy spectrum.
-        :return: A tuple containing the spectral templates (object) and the velocity scale.
+        :param FWHM_gal: Spectral resolution (FWHM) of the galaxy spectrum.
+
+        :return: A tuple containing the spectral templates (LibraryInstance) and the velocity scale in km/s.
         """
         gal_lam, gal_flux, gal_err = self.gal_spectrum
 
@@ -281,141 +258,68 @@ class TemplateRetrieval:
 
         velscale = SPEED_OF_LIGHT * np.diff(np.log(gal_lam[[0, -1]])) / (gal_lam.size - 1)  # eq.(8) of Cappellari (2017)
         velscale = velscale[0]
-        logging.info(f"Velocity scale per pixel: {velscale:.2f} km/s")
+        logging.info(f"Velocity scale per pixel: {velscale:.5f} km/s")
 
-        library = self.library_handler.retrieve_templates(velscale, age_range, FWHM_gal)
+        library = self.library_handler.retrieve_templates(velscale, age_range, metal_range, norm_range, FWHM_gal)
 
         return library, velscale
 
-    def gaussian_emission_lines(self, FWHM_gal: float, ln_lam_temp: np.ndarray) -> Tuple[np.ndarray, List[str], np.ndarray, int]:
-        """
-        Generate Gaussian emission lines templates.
 
-        This function creates Gaussian templates for emission lines based on the provided spectral resolution (FWHM) and template wavelengths.
-
-        :param FWHM_gal: spectral resolution FWHM of the galaxy spectrum.
-        :param ln_lam_temp: Logarithm of template wavelengths.
-        :return: Tuple containing gas templates, gas names, line wavelengths, and number of gas components.
-        """
-        gal_lam, gal_flux, gal_err = self.gal_spectrum
-
-        lam_range_gal = [np.min(gal_lam), np.max(gal_lam)]
-        gas_templates, gas_names, line_wave = util.emission_lines(ln_lam_temp, lam_range_gal, FWHM_gal)
-        n_gas = len(gas_names)
-
-        return gas_templates, gas_names, line_wave, n_gas
-
-    def stack_stars_gas(self, stars_templates: np.ndarray, gas_templates: np.ndarray, n_stars: int, n_gas: int,
-                        start_stars: List[float], start_gas: List[float]) -> Tuple[np.ndarray, List[int], Optional[np.ndarray], List[int], List[List[float]]]:
-        """
-        Stack stellar and gas templates.
-
-        This function stacks stellar and gas templates together, creating the necessary component labels and initial guesses for fitting.
-
-        :param stars_templates: Stellar templates.
-        :param gas_templates: Gas templates.
-        :param n_stars: Number of stellar components.
-        :param n_gas: Number of gas components.
-        :param start_stars: Initial guess for stellar components.
-        :param start_gas: Initial guess for gas components.
-        :return: Tuple containing the combined templates, component array, gas component array, moments array, and start array.
-        """
-        templates = np.column_stack([stars_templates, gas_templates])
-
-        if not gas_templates.size:
-            component = [0] * n_stars
-            gas_component = None
-            moments = len(start_stars)
-            start = start_stars
-        else:
-            component = [0] * n_stars + [1] * n_gas
-            gas_component = np.array(component) > 0
-            moments = [len(start_stars), len(start_gas)]
-            start = [start_stars, start_gas]
-
-        return templates, np.array(component), gas_component, moments, start
-
-    def fit_spectrum(self, library: object, templates: np.ndarray, velscale: float, start: List[List[float]], dust: dict, bounds: List[List[float]], fixed: List[List[bool]], moments: List[int], lam_temp: np.ndarray,
-                     reg_dim: Tuple[int, ...], component: List[int], gas_component: Optional[np.ndarray], gas_names: List[str], output_path: str, n_iterations: int,
+    def fit_spectrum(self, library: object, templates: np.ndarray, velscale: float, start: List[List[float]], dust: dict, moments: List[int], lam_temp: np.ndarray,
+                     reg_dim: Tuple[int, ...], output_path: str, n_iterations: int,
                      **kwargs) -> None:
         """
         Fit the combined spectrum using pPXF.
 
-        This function uses the pPXF software to fit the galaxy spectrum to the stellar and gas templates, optionally with multiple iterations to compute uncertainties.
+        This function uses the pPXF software to fit the galaxy spectrum to the stellar templates, optionally with multiple iterations to compute uncertainties.
 
         :param library: Template library.
-        :param templates: Combined stellar and gas templates.
+        :param templates: Stellar templates.
         :param velscale: Velocity scale per pixel.
         :param start: Initial guess for the fit.
         :param dust: Dictionary with dust extinction information.
-        :param bounds: Bounds for the fit parameters.
-        :param fixed: Boolean list for fixing certain parameters.
         :param moments: List of moments for each component.
         :param lam_temp: Template wavelengths.
         :param reg_dim: Regularization dimensions.
-        :param component: List indicating which templates belong to which component.
-        :param gas_component: Array indicating gas components.
-        :param gas_names: Names of the gas components.
         :param output_path: Path to save the fitted spectrum.
         :param n_iterations: Number of iterations to run for uncertainty calculation.
         :param kwargs: Additional keyword arguments.
         """
         gal_lam, gal_flux, gal_err = self.gal_spectrum
 
-        mask = kwargs['mask']
+        mask = kwargs.get('mask', None)
 
         if mask is not None:
+            mask_lam = np.ones(gal_lam.shape, dtype=bool)  # Initialize mask as boolean array
 
-            mask_lam = np.ones(gal_lam.shape)
+            # Function to apply a range mask
+            def apply_range_mask(mask_lam, gal_lam, mask_range):
+                return np.logical_and(mask_lam, ~((gal_lam > mask_range[0]) & (gal_lam < mask_range[1])))
 
             try:
-                mask_lam = np.logical_and(mask_lam, ~((gal_lam > mask[0]) & (gal_lam < mask[1])))
+                # If mask is a single range (expected to be a list or tuple of length 2)
+                if len(mask) == 2:
+                    mask_lam = apply_range_mask(mask_lam, gal_lam, mask)
+                else:
+                    # Otherwise, assume it's a list of ranges
+                    for mask_range in mask:
+                        mask_lam = apply_range_mask(mask_lam, gal_lam, mask_range)
 
-            except:
-                for range in mask:
-                    mask_lam = np.logical_and(mask_lam, ~((gal_lam > range[0]) & (gal_lam < range[1])))
-
+            except (TypeError, IndexError) as e:
+                raise ValueError("Mask should be a 2-element range or a list of ranges.") from e
 
             kwargs['mask'] = mask_lam
 
 
-        pp = ppxf(templates, gal_flux, gal_err, velscale, start, dust=dust, bounds=bounds, fixed=fixed, moments=moments, lam=gal_lam, lam_temp=lam_temp,
-                  reg_dim=reg_dim, component=component, gas_component=gas_component, gas_names=gas_names,
+        pp = ppxf(templates, gal_flux, gal_err, velscale, start, dust=dust, moments=moments, lam=gal_lam, lam_temp=lam_temp,
+                  reg_dim=reg_dim,
                   **kwargs)
 
-        if n_iterations is not None:
-            ages = []
-            metallicities = []
-
-            for _ in np.arange(n_iterations):
-                # Create a new simulated spectrum
-                simulated_flux = gal_flux + np.random.normal(0, gal_err)
-
-                try:
-                    pp_sim = ppxf(templates, simulated_flux, gal_err, velscale, start, dust=dust, bounds=bounds, fixed=fixed, moments=moments, lam=gal_lam, lam_temp=lam_temp,
-                              reg_dim=reg_dim, component=component, gas_component=gas_component, gas_names=gas_names,
-                              **kwargs)
-
-                    # Create light weights plot
-                    light_weights = pp_sim.weights
-                    light_weights = light_weights.reshape(reg_dim)  # Reshape to (n_ages, n_metal)
-                    light_weights /= light_weights.sum()            # Normalize to light fractions
-
-                    mean_age, mean_z = library.plot(light_weights, output_path, plot=False)
-                    ages.append(mean_age)
-                    metallicities.append(mean_z)
-
-                except RuntimeError:
-                    continue
-
-            std_ages = np.std(np.array(ages))
-            std_metallicities = np.std(np.array(metallicities))
-
+        if pp.dust is not None:
+            a_v = pp.dust[0]['sol'][0]
         else:
-            std_ages = "n/a"
-            std_metallicities = "n/a"
+            a_v = 0.0
 
-        # print('standard deviations', std_ages, std_metallicities)
 
         # Assuming pp.bestfit is a 1D array-like object
         bestfit_table = Table([pp.bestfit], names=('flux',))
@@ -431,7 +335,7 @@ class TemplateRetrieval:
         fig, ax = plt.subplots(figsize=(11, 5))
         pp.plot()
         plt.grid(alpha=0.5)
-        plt.savefig(os.path.join(output_path,'fitted_spectrum_static.png'))
+        plt.savefig(os.path.join(output_path,'fitted_spectrum_static.png'), dpi=150)
 
         # Convert Matplotlib figure to Plotly
         plotly_fig = tls.mpl_to_plotly(fig)
@@ -443,215 +347,211 @@ class TemplateRetrieval:
         light_weights = pp.weights
         light_weights = light_weights.reshape(reg_dim)  # Reshape to (n_ages, n_metal)
         light_weights /= light_weights.sum()            # Normalize to light fractions
-        library.plot(light_weights, output_path, std_ages, std_metallicities)
+
+        # Compute uncertainties if n_iterations is specified
+        std_ages, std_metallicities, std_A_v = None, None, None
+        if n_iterations is not None:
+            std_ages, std_metallicities, std_A_v = self._compute_uncertainties(
+                n_iterations, library, templates, gal_flux, gal_err, velscale, start, dust, moments, gal_lam, lam_temp, reg_dim, **kwargs
+            )
+
+        library.plot(light_weights, output_path, std_ages, std_metallicities, a_v, std_A_v)
+
+    def _compute_uncertainties(self, n_iterations: int, library, templates, gal_flux, gal_err, velscale, start, dust, moments, gal_lam, lam_temp, reg_dim, **kwargs):
+        """
+        Compute uncertainties via Monte Carlo iterations.
+        """
+        ages, metallicities, A_v = [], [], []
+
+        for i in range(n_iterations):
+            simulated_flux = gal_flux + np.random.normal(0, gal_err)
+
+            try:
+                pp_sim = ppxf(templates, simulated_flux, gal_err, velscale, start, dust=dust, moments=moments,
+                              lam=gal_lam, lam_temp=lam_temp, reg_dim=reg_dim, **kwargs)
+
+                light_weights_sim = pp_sim.weights.reshape(reg_dim)
+                light_weights_sim /= light_weights_sim.sum()
+
+                mean_age, mean_z = library.plot(light_weights_sim, plot=False)
+                ages.append(mean_age)
+                metallicities.append(mean_z)
+
+                if pp_sim.dust is not None:
+                    A_v.append(pp_sim.dust[0]['sol'][0])
+
+            except ValueError:
+                continue
+
+        return np.std(ages), np.std(metallicities), np.std(A_v) if A_v else None
 
 
 class SpectrumProcessor:
     """
-    Class to process, combine, and fit spectra.
+    Class to process, and fit a spectrum.
+
+    This class handles spectral data processing, including masking spectral lines, retrieving templates, and fitting the spectrum with pPXF.
     """
 
-    def __init__(self, config: dict, segments: List[Tuple[np.ndarray, np.ndarray, np.ndarray]]):
+    def __init__(self, config: dict, gal_spectrum: Tuple[np.ndarray, np.ndarray, np.ndarray]):
         """
         Initialize with configuration settings.
 
-        :param config: Configuration dictionary.
-        :param segments: List of tuples, each containing arrays of wavelengths, fluxes, and errors.
+        :param config: Configuration dictionary with keys controlling processing options, such as:
+                       - 'absorp_lam': List of absorption line wavelengths.
+                       - 'output_path': Path to save output files.
+        :param gal_spectrum: Tuple which contains three arrays (wavelength, flux, error).
         """
         self.config = config
-        self.segments = segments
+        self.gal_spectrum = gal_spectrum
 
-    def mask_spectral_lines(self, R: float, n_pix: Tuple[int, int]) -> List[Tuple[float, float]]:
+    def mask_spectral_lines(self, R: float) -> List[Tuple[float, float]]:
         """
         Mask Milky Way absorption lines and fit Gaussian models to correct spectra.
 
-        :param R: Instrumental resolution.
-        :param n_pix: Tuple of two integers defining pixel range around each rest wavelength.
-        :return: List of tuples defining wavelength ranges masked by Milky Way lines.
+        :param R: Instrumental resolution as a float.
+
+        :return: List of wavelength range tuples `(float, float)` masked during processing.
         """
 
-        for i, segment in enumerate(self.config['segments']):
+        lam_gal_log_rebin, norm_flux_gal_log_rebin, norm_err_gal_log_rebin = self.gal_spectrum
 
-            lam_gal_log_rebin, norm_flux_gal_log_rebin, norm_err_gal_log_rebin = self.segments[i]
+        delta_log_lambda = np.mean(np.diff(np.log10(lam_gal_log_rebin)))
+        n_pix_auto = int(np.ceil(np.log10(1 + 1 / R) / delta_log_lambda))
+        n_pix = (n_pix_auto, n_pix_auto)
 
-            logging.info('mask before adding milky way lines is: \n {}'.format(self.config['mask']))
+        logging.info(f'Using n_pix = {n_pix} based on resolution R = {R}')
 
-            for absorp_lam in self.config['absorp_lam']:
+        logging.info('mask before adding milky way lines is: \n {}'.format(self.config['mask']))
 
-                mask = (lam_gal_log_rebin > (absorp_lam-n_pix[0])) & (lam_gal_log_rebin < (absorp_lam+n_pix[1]))
-                # print('mask',mask)
-                # print('wavelength array', lam_gal_log_rebin)
-                wavelength = lam_gal_log_rebin[mask]
+        for absorp_lam in self.config['absorp_lam']:
 
-                logging.info(f'wavelength range for milky way line at {absorp_lam}: {wavelength}')
+            mask = (lam_gal_log_rebin > (absorp_lam-n_pix[0])) & (lam_gal_log_rebin < (absorp_lam+n_pix[1]))
+            wavelength = lam_gal_log_rebin[mask]
 
-                if wavelength.size > 0:
+            logging.info(f'wavelength range for milky way line at {absorp_lam}: {wavelength}')
 
-                    spectrum = norm_flux_gal_log_rebin[mask]
-                    baseline = np.mean(spectrum)
-                    spectrum -= baseline
+            if wavelength.size > 0:
 
-                    sigma_inst = SPEED_OF_LIGHT/(R*2.355)
+                spectrum = norm_flux_gal_log_rebin[mask]
+                baseline = np.mean(spectrum)
+                spectrum -= baseline
 
-                    velocity = (wavelength - absorp_lam) / absorp_lam * SPEED_OF_LIGHT
-                    # print('velocity', velocity)
+                sigma_inst = SPEED_OF_LIGHT/(R*2.355)
 
-                    # Step 4: Create lmfit model and set initial parameters
+                velocity = (wavelength - absorp_lam) / absorp_lam * SPEED_OF_LIGHT
+
+                # Step 1: Create lmfit model and set initial parameters
+                model = GaussianModel()
+                params = model.make_params(amplitude=-1, center=0, sigma=sigma_inst)  # sigma set to instrumental resolution
+
+                # Step 2: Fit the model to the spectrum
+                result = model.fit(spectrum, params, x=velocity, weights=1/norm_err_gal_log_rebin[mask])
+
+                # Step 3: Subtract the best-fit Gaussian from the spectrum
+                spectrum_corrected = spectrum - result.best_fit
+
+                if result.redchi > 2 or result.params['sigma'].value > 10 * sigma_inst:
+
+                    spectrum = spectrum_corrected
+
+                    # Step 1: Create lmfit model and set initial parameters
                     model = GaussianModel()
-                    params = model.make_params(amplitude=-1, center=0, sigma=sigma_inst)  # sigma set to instrumental resolution
+                    params = model.make_params(amplitude=-0.5, center=0, sigma=sigma_inst)  # sigma set to instrumental resolution
 
-                    # Step 5: Fit the model to the spectrum
-                    result = model.fit(spectrum, params, x=velocity)
+                    # Step 2: Fit the model to the spectrum
+                    result = model.fit(spectrum, params, x=velocity, weights=1/norm_err_gal_log_rebin[mask])
 
-                    # Step 6: Subtract the best-fit Gaussian from the spectrum
+                    # Step 3: Subtract the best-fit Gaussian from the spectrum
                     spectrum_corrected = spectrum - result.best_fit
 
-                    if result.params['sigma'].value > 10*sigma_inst:
+                fwhm_velocity = result.params['fwhm'].value  # FWHM in km/s
 
-                        spectrum = spectrum_corrected
+                fwhm_wavelength = fwhm_velocity * absorp_lam / SPEED_OF_LIGHT
 
-                        model = GaussianModel()
-                        params = model.make_params(amplitude=-0.5, center=0, sigma=sigma_inst)  # sigma set to instrumental resolution
+                logging.info(f'FWHM_wavelength for absorption line {absorp_lam} is: {fwhm_wavelength}')
 
-                        # Step 5: Fit the model to the spectrum
-                        result = model.fit(spectrum, params, x=velocity)
+                self.config.setdefault('mask', []).append((absorp_lam - fwhm_wavelength, absorp_lam + fwhm_wavelength))
 
-                        # Step 6: Subtract the best-fit Gaussian from the spectrum
-                        spectrum_corrected = spectrum - result.best_fit
+                # Print the fitting result
+                logging.info(result.fit_report())
 
-                    fwhm_velocity = result.params['fwhm'].value  # FWHM in km/s
+                # Create a Plotly figure
+                fig = go.Figure()
 
-                    fwhm_wavelength = fwhm_velocity * absorp_lam / SPEED_OF_LIGHT
+                # Add traces for the plots
+                fig.add_trace(go.Scatter(x=wavelength, y=spectrum, mode='lines', name='Original Spectrum'))
+                fig.add_trace(go.Scatter(x=wavelength, y=result.best_fit, mode='lines', name='Fitted Gaussian', line=dict(dash='dash')))
+                fig.add_trace(go.Scatter(x=wavelength, y=spectrum_corrected, mode='lines', name='Corrected Spectrum'))
+                fig.add_trace(go.Scatter(x=[absorp_lam, absorp_lam], y=[np.min(spectrum_corrected), np.max(spectrum_corrected)],
+                                         mode='lines', name=f'{absorp_lam}', line=dict(color='red', dash='dot')))
 
-                    if self.config['mask'] == None:
-                        self.config['mask'] = [(absorp_lam-fwhm_wavelength, absorp_lam+fwhm_wavelength)]
+                # Update layout
+                fig.update_layout(
+                    title='Spectral Data',
+                    xaxis_title='Wavelength (Angstroms)',
+                    yaxis_title='Intensity',
+                    legend_title='Legend',
+                    template='plotly_white'
+                )
 
-                    else:
-                        try:
-                            self.config['mask'].append((absorp_lam-fwhm_wavelength, absorp_lam+fwhm_wavelength))
-                        except AttributeError:
-                            self.config['mask'] = [self.config['mask']]
-                            self.config['mask'].append((absorp_lam-fwhm_wavelength, absorp_lam+fwhm_wavelength))
-
-
-                    # Print the fitting result
-                    logging.info(result.fit_report())
-
-                    # Create a Plotly figure
-                    fig = go.Figure()
-
-                    # Add traces for the plots
-                    fig.add_trace(go.Scatter(x=wavelength, y=spectrum, mode='lines', name='Original Spectrum'))
-                    fig.add_trace(go.Scatter(x=wavelength, y=result.best_fit, mode='lines', name='Fitted Gaussian', line=dict(dash='dash')))
-                    fig.add_trace(go.Scatter(x=wavelength, y=spectrum_corrected, mode='lines', name='Corrected Spectrum'))
-                    fig.add_trace(go.Scatter(x=[absorp_lam, absorp_lam], y=[np.min(spectrum_corrected), np.max(spectrum_corrected)],
-                                             mode='lines', name=f'{absorp_lam}', line=dict(color='red', dash='dot')))
-
-                    # Update layout
-                    fig.update_layout(
-                        title='Spectral Data',
-                        xaxis_title='Wavelength (Angstroms)',
-                        yaxis_title='Intensity',
-                        legend_title='Legend',
-                        template='plotly_white'
-                    )
-
-                    # Save the interactive plot as an HTML file
-                    fig.write_html(os.path.join(self.config['output_path'], f'{segment}_{absorp_lam}_masked.html'), auto_open=False)
+                # Save the interactive plot as an HTML file
+                fig.write_html(os.path.join(self.config['output_path'], f'{absorp_lam}_masked.html'), auto_open=False)
 
 
-                logging.info('mask is now \n {}'.format(self.config['mask']))
+            logging.info('mask is now \n {}'.format(self.config['mask']))
 
         return self.config['mask']
 
-    def process_combined_spectrum(self, library_handler: LibraryHandler) -> None:
+    def process_spectrum(self, library_handler: LibraryHandler) -> None:
         """
-        Process the spectral data through various steps including combining spectra,
-        retrieving templates, generating emission lines, stacking templates, and fitting the spectrum.
+        Process the spectral data through steps like retrieving templates, setting parameters, and fitting the spectrum with pPXF.
 
-        :param library_handler: Handler for spectral library.
+        :param library_handler: Instance of `LibraryHandler` for spectral template retrieval.
         """
-        # Step 1: Combine the segments
-        combiner = SegmentCombiner(self.segments)
-        combined_spectrum = combiner.combine_segments()
 
-        # Step 2: Initialize TemplateRetrieval with the combined spectrum
-        template_retrieval = TemplateRetrieval(combined_spectrum, library_handler)
+        # Step 1: Retrieve spectral templates
+        template_retrieval = TemplateRetrieval(self.gal_spectrum, library_handler)
+        library, velscale = template_retrieval.retrieve_spectral_templates(age_range = self.config['age_range'], metal_range = self.config['metal_range'], norm_range = self.config['norm_range'], default_noise = self.config['default_noise'], FWHM_gal = self.config['FWHM_gal'])
 
-        # Step 3: Retrieve spectral templates
-        age_range = self.config['age_range']
-        library, velscale = template_retrieval.retrieve_spectral_templates(age_range, self.config['default_noise'], self.config['FWHM_gal'])
-
+        # Step 2: Set fit parameters
         reg_dim = library.templates.shape[1:]
         stars_templates = library.templates.reshape(library.templates.shape[0], -1)
         lam_temp = library.lam_temp
-        ln_lam_temp = library.ln_lam_temp
         n_stars = stars_templates.shape[1]
+        component = [0] * n_stars
 
-        # Step 4: Generate Gaussian emission lines templates
-        FWHM_gal = self.config['FWHM_gal']
-        gas_templates, gas_names, line_wave, n_gas = template_retrieval.gaussian_emission_lines(FWHM_gal, ln_lam_temp)
-
-        # Step 5: Stack the stellar and gas templates
-        start_stars = self.config['start_stars']
-        start_gas = self.config['start_gas']
+        start_stars = self.config['start']
 
         if start_stars is None:
             start_stars = [0.0, 3 * velscale]
-        if start_gas is None:
-            start_gas = [0.0, 3 * velscale]
 
-        templates, component, gas_component, moments, start = template_retrieval.stack_stars_gas(
-            stars_templates, gas_templates, n_stars, n_gas, start_stars, start_gas
-        )
+        moments = len(start_stars)
 
-        dust_stars = self.config['dust_stars']
-        dust_gas = self.config['dust_stars']
+        dust_stars = self.config['dust']
 
         if dust_stars is not None:
             dust_stars["component"] = np.array(component) == 0
             dust_stars["func"] = reddy_attenuation
-        elif dust_gas is not None:
-            dust_gas["component"] = np.array(component) == 1
-            dust_gas["func"] = reddy_attenuation
-
-        bounds_stars = self.config['bounds_stars']
-        bounds_gas = self.config['bounds_gas']
-        fixed_stars = self.config['fixed_stars']
-        fixed_gas = self.config['fixed_gas']
-
-        if gas_component is None:
-            dust = None if dust_stars is None else [dust_stars]
-            bounds = bounds_stars
-            fixed = fixed_stars
-        else:
-            dust = [dust_stars, dust_gas]
-            bounds = [bounds_stars, bounds_gas]
-            fixed = [fixed_stars, fixed_gas]
+            dust_stars = [dust_stars]
 
 
-        # Step 6: Fit the spectrum using pPXF
+        # Step 3: Fit the spectrum using pPXF
         fit_kwargs = {
             key: value for key, value in self.config.items()
-            if key not in ['age_range', 'start_stars', 'start_gas', 'FWHM_gal', 'output_path', 'absorp_lam', 'segments', 'default_noise', 'dust_stars', 'dust_gas', 'bounds_stars', 'bounds_gas', 'fixed_stars', 'fixed_gas',
-            'n_iterations'
+            if key not in ['age_range', 'metal_range', 'norm_range', 'FWHM_gal', 'output_path', 'absorp_lam', 'segment', 'default_noise', 'n_iterations', 'start', 'dust',
             ]
         }
 
         template_retrieval.fit_spectrum(
             library,
-            templates,
+            stars_templates,
             velscale,
-            start,
-            dust,
-            bounds,
-            fixed,
+            start_stars,
+            dust_stars,
             moments,
             lam_temp,
             reg_dim,
-            component,
-            gas_component,
-            gas_names,
             output_path = self.config['output_path'],
             n_iterations = self.config['n_iterations'],
 

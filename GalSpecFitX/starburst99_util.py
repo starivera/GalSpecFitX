@@ -77,7 +77,7 @@ class starburst:
 
     pathname:
         path with wildcards returning the list of files to use
-        (e.g. ``starburst_lib/stellar_templates/GENEVA_high_1.30_2.30.Zp0.001T0.00001_inst.fits``).
+        (e.g. ``sample_libraries/STARBURST99/geneva_high/instantaneous/salpeter/*.fits``).
         The files must form a Cartesian grid in age and metallicity and the procedure returns an error if
         they do not.
     velscale:
@@ -85,8 +85,8 @@ class starburst:
         (e.g. 60). This is generally the same or an integer fraction of the
         ``velscale`` of the galaxy spectrum used as input to ``ppxf``.
     FWHM_gal:
-        scalar or vector with the FWHM of the instrumental resolution of the
-        galaxy spectrum in Angstrom at every pixel of the stellar templates.
+        scalar with the FWHM of the instrumental resolution of the
+        galaxy spectrum in Angstrom.
 
         - If ``FWHM_gal=None`` (default), no convolution is performed.
 
@@ -99,8 +99,12 @@ class starburst:
         to be younger than the age of the Universe at a given redshift.
     metal_range: array_like with shape (2,)
         ``[metal_min, metal_max]`` optional metallicity [M/H] range (inclusive)
-        for the STARBURST99 models (e.g.`` metal_range = [0, np.inf]`` to select only
-        the spectra with Solar metallicity and above).
+        for the STARBURST99 models (e.g.`` metal_range = [0.0, 0.020]`` to select only
+        the spectra with up to Solar metallicity).
+    norm_range: array_like with shape (2,)
+        A two-elements vector specifying the wavelength range in Angstrom
+        within which to compute the templates normalization
+        (e.g. ``norm_range=[5070, 5950]`` for the FWHM of the V-band).
     wave_range: array_like with shape (2,)
         A two-elements vector specifying the wavelength range in Angstrom for
         which to extract the stellar templates. Restricting the wavelength
@@ -141,10 +145,11 @@ class starburst:
     """
 
     def __init__(self, pathname, velscale, lib_path, evol_track, FWHM_gal=None, FWHM_tem=0.4,
-                 age_range=None, metal_range=None, wave_range=None):
+                 age_range=None, metal_range=None, norm_range=None, wave_range=None):
 
         files = glob.glob(pathname)
         assert len(files) > 0, "Files not found %s" % pathname
+        files.sort()
 
         all = [age_metal(f) for f in files]
         all_ages, all_metals = np.array(all).T
@@ -164,14 +169,18 @@ class starburst:
         lam_range_temp = fits.getdata(lam)
 
         cenwave_range_temp = np.zeros(len(lam_range_temp))
-
         cenwave_range_temp[:-1] = (lam_range_temp[1:] + lam_range_temp[:-1]) / 2
-
         cenwave_range_temp[-1] = lam_range_temp[-1] + ((lam_range_temp[-1] - lam_range_temp[-2]) / 2)
+
+        # cenwave_range_temp = cenwave_range_temp[[0, -1]]
+        FWHM_tem = np.ones(len(cenwave_range_temp))* FWHM_tem
 
         ssp_new, ln_lam_temp = util.log_rebin(cenwave_range_temp, ssp, velscale=velscale)[:2]
 
         lam_temp = np.exp(ln_lam_temp)
+
+        if norm_range is not None:
+            band = (norm_range[0] <= lam_temp) & (lam_temp <= norm_range[1])
 
         templates = np.empty((ssp_new.size, n_ages, n_metal))
         age_grid, metal_grid, flux = np.empty((3, n_ages, n_metal))
@@ -186,13 +195,14 @@ class starburst:
         # instrumental spectral profiles are well approximated by Gaussians.
 
         if FWHM_gal is not None:
-            FWHM_diff = (np.float64(FWHM_gal)**2 - FWHM_tem**2).clip(0)
+            FWHM_diff = (FWHM_gal**2 - FWHM_tem**2).clip(0)
             if np.any(FWHM_diff == 0):
                 print("WARNING: the template's resolution dlam is larger than the galaxy's")
             sigma = np.sqrt(FWHM_diff)/np.sqrt(4*np.log(4))
 
             # FWHM_dif = np.sqrt(FWHM_gal**2 - FWHM_tem**2)
             # sigma = FWHM_dif/2.355/h2['CDELT1']   # Sigma difference in pixels
+
 
         # Here we make sure the spectra are sorted in both [M/H] and Age
         # along the two axes of the rectangular grid of templates.
@@ -202,13 +212,13 @@ class starburst:
                 hdu = fits.open(files[p])
                 ssp = hdu[0].data
                 if FWHM_gal is not None:
-                    if np.isscalar(FWHM_gal):
-                        if sigma > 0.1:   # Skip convolution for nearly zero sigma
-                            ssp = ndimage.gaussian_filter1d(ssp, sigma)
-                    else:
-                        ssp = util.gaussian_filter1d(ssp, sigma)  # convolution with variable sigma
+                    ssp = util.varsmooth(cenwave_range_temp, ssp, sigma)
 
                 ssp_new = util.log_rebin(cenwave_range_temp, ssp, velscale=velscale)[0]
+
+                if norm_range is not None:
+                    flux[j, k] = np.median(ssp_new[band])
+                    ssp_new /= flux[j, k]   # Normalize every spectrum
 
                 templates[:, j, k] = ssp_new
                 age_grid[j, k] = age
@@ -228,6 +238,10 @@ class starburst:
             metal_grid = metal_grid[:, w]
             flux = flux[:, w]
 
+        if norm_range is None:
+            flux = np.median(templates[templates > 0])
+            templates /= flux  # Normalize by a scalar
+
         self.templates_full = templates
         self.ln_lam_temp_full = ln_lam_temp
         self.lam_temp_full = lam_temp
@@ -244,11 +258,11 @@ class starburst:
         self.n_ages, self.n_metal = age_grid.shape
         self.flux = flux
 
+
 ###############################################################################
 
-    def plot(self, weights, output_path=None, std_ages=None, std_metallicities=None, plot=True):
+    def plot(self, weights, output_path=None, std_ages=None, std_metallicities=None, a_v=0.0, std_A_v=None, plot=True):
 
-        # print('standard deviations', std_ages, std_metallicities)
         assert weights.ndim == 2, "`weights` must be 2-dim"
         assert self.age_grid.shape == self.metal_grid.shape == weights.shape, \
             "Input weight dimensions do not match"
@@ -303,16 +317,39 @@ class starburst:
 
             # Plot mean age line
             ax.axvline(mean_age, color='k', linestyle='--', linewidth=1.5)
+
+            # Display mean age
+            age_text = (
+                f"<Age> = {mean_age:.2f} \u00B1 {std_ages:.1e}" if std_ages is not None
+                else f"<Age> = {mean_age:.2f}"
+            )
             ax.text(
-                mean_age + 1, 0.9, f'<Age> = {mean_age:.2f} +/- {std_ages:.5f}',
-                verticalalignment='center', horizontalalignment='right', fontsize=10
+                mean_age, 0.9, age_text,
+                verticalalignment='center', horizontalalignment='center', fontsize=10
             )
 
             # Display mean metallicity
-            ax.text(
-                np.min(unique_ages) + 1, 0.5, f'<Z> = ({(mean_z/z_sol):.2f} +/- {std_metallicities:.5f})* Zsol',
-                verticalalignment='center', horizontalalignment='left', fontsize=10
+            metallicity_text = (
+                f"<Z> = ({(mean_z / z_sol):.2f} \u00B1 {std_metallicities:.1e}) * Zsol"
+                if std_metallicities is not None
+                else f"<Z> = {(mean_z / z_sol):.2f} * Zsol"
             )
+            ax.text(
+                mean_age, 0.5, metallicity_text,
+                verticalalignment='center', horizontalalignment='center', fontsize=10
+            )
+
+            # Display dust component
+            dust_text = (
+                f"A_v = {a_v:.3f} \u00B1 {std_A_v:.2e}"
+                if std_A_v is not None
+                else f"A_v = {a_v:.2f}"
+            )
+            ax.text(
+                mean_age, 0.7, dust_text,
+                verticalalignment='center', horizontalalignment='center', fontsize=10
+            )
+
 
             # Set title, axis labels and legend
             plt.title("Light Weights Fractions");
@@ -320,7 +357,11 @@ class starburst:
             ax.set_ylabel('Light fraction')
             ax.set_xlim(np.min(unique_ages) - 1, np.max(unique_ages) + 1)
             ax.set_ylim(0, 1)
-            ax.legend(loc='upper right')
-            plt.savefig(os.path.join(output_path,'light_weights.png'))
+            ax.legend(loc='best')
+            plt.grid(alpha=0.5)
 
-        return mean_age, mean_z
+
+            if output_path != None:
+                plt.savefig(os.path.join(output_path,'light_weights.png'), dpi=150)
+
+        return mean_age, mean_z / z_sol

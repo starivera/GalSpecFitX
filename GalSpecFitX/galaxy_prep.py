@@ -126,6 +126,16 @@ class LogRebinningOperation:
 class NormalizationOperation:
     """Class for median normalizing the spectrum."""
 
+    def __init__(self, norm_range: List[float]):
+        """
+        Initialize the de-redshifting operation.
+
+        Parameters:
+        norm_range (List[float]): List of two floats representing the wavelength range in Angstroms within which to compute the galaxy spectrum's normalization `[norm_min, norm_max]`.
+        """
+
+        self.norm_range = norm_range
+
     def apply(self, spectrum: Tuple[np.ndarray, np.ndarray, np.ndarray]) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Apply the normalization operation.
@@ -138,26 +148,33 @@ class NormalizationOperation:
         """
 
         waves, fluxes, errors = spectrum
-        med_norm_fluxes = fluxes / np.median(fluxes)
-        med_norm_errors = errors / np.median(errors)
+
+        if self.norm_range is None:
+            median_flux = np.median(fluxes)
+            median_error = np.median(errors)
+
+        else:
+            median_flux = np.median(fluxes[(waves >= self.norm_range[0]) & (waves <= self.norm_range[1])])
+            median_error =  np.median(errors[(waves >= self.norm_range[0]) & (waves <= self.norm_range[1])])
+
+        med_norm_fluxes = fluxes / median_flux
+        med_norm_errors = errors / median_error
 
         return waves, med_norm_fluxes, med_norm_errors
 
 class GalaxySpectrum:
     """Class for managing a galaxy spectrum."""
 
-    def __init__(self, filename: str, segment: str, use_hst_cos: bool):
+    def __init__(self, filename: str, segment: str):
         """Initialize the galaxy spectrum.
 
         Parameters:
         filename (str): Name of the FITS file containing the spectrum.
         segment (str): Segment of the spectrum to use.
-        use_hst_cos (bool): Flag indicating if the data is from HST/COS.
         """
 
         self.filename = filename
         self.segment = segment
-        self.use_hst_cos = use_hst_cos
 
     def get_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
@@ -167,57 +184,42 @@ class GalaxySpectrum:
         Tuple[np.ndarray, np.ndarray, np.ndarray]: The spectrum data as (wavelengths, fluxes, errors).
         """
 
-        if self.use_hst_cos:
-            gal_data = fits.getdata(self.filename)
-            data_seg = gal_data['segment'] == self.segment
+        segment = int(self.segment)
+        with fits.open(self.filename) as hdul:
+            table_data = hdul[segment].data
 
-            wavelengths = gal_data[data_seg]['wavelength'].flatten()
-            fluxes = gal_data[data_seg]['flux'].flatten()
-            errors = gal_data[data_seg]['error'].flatten()
-        else:
-            segment = int(self.segment)
-            with fits.open(self.filename) as hdul:
-                table_data = hdul[segment].data
-
-            # Extract the columns
-            wavelengths = table_data['wavelength']
-            fluxes = table_data['flux']
-            errors = table_data['error']
+        # Extract the columns
+        wavelengths = table_data['wavelength']
+        fluxes = table_data['flux']
+        errors = table_data['error']
 
         return wavelengths, fluxes, errors
 
-    def append_new_table(self, spectrum: Tuple[np.ndarray, np.ndarray, np.ndarray], output_path: str) -> None:
-        """Append a new table containing spectrum data as a new FITS extension.
+    def create_new_table(self, spectrum: Tuple[np.ndarray, np.ndarray, np.ndarray], output_path: str) -> None:
+        """Create and save a new FITS table containing spectrum data.
 
         Parameters:
-        spectrum (Tuple[np.ndarray, np.ndarray, np.ndarray]): The spectrum data to append as (wavelengths, fluxes, errors).
+        spectrum (Tuple[np.ndarray, np.ndarray, np.ndarray]): The spectrum data as (wavelengths, fluxes, errors).
+        output_path (str): The directory where the FITS file will be saved.
         """
 
-        # Define the spectrum data
+        # Unpack spectrum data
         wavelengths, fluxes, errors = spectrum
 
-        # Create a new table for the segment
+        # Construct the table
         new_table = Table(
             [[self.segment], [wavelengths], [fluxes], [errors]],
             names=('SEGMENT', 'WAVELENGTH', 'FLUX', 'ERROR')
         )
+
+        # Create a FITS binary table HDU
         new_hdu = fits.BinTableHDU(new_table, name=f'PROCESSED_DATA_{self.segment}')
 
-        # Check if the file exists
-        file_name = os.path.join(output_path,'bestfit.fits')
-        if os.path.exists(file_name):
-            # Open the existing file and append the new table
-            with fits.open(file_name, mode='append') as hdul:
-                hdul.append(new_hdu)
-        else:
-            # Create a Primary HDU with no data
-            primary_hdu = fits.PrimaryHDU()
+        # Define output file path
+        file_name = os.path.join(output_path, 'bestfit.fits')
 
-            # Create an HDU list with the primary HDU and the new table HDU
-            hdul = fits.HDUList([primary_hdu, new_hdu])
-
-            # Write the HDU list to a new FITS file
-            hdul.writeto(file_name)
+        # Write FITS file with a primary HDU and the new table
+        fits.HDUList([fits.PrimaryHDU(), new_hdu]).writeto(file_name, overwrite=True)
 
 
 class ProcessedGalaxySpectrum:

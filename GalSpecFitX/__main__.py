@@ -7,6 +7,8 @@ import argparse
 import logging
 import configparser
 import matplotlib.pyplot as plt
+import plotly.tools as tls
+import plotly.io as pio
 import numpy as np
 from GalSpecFitX.galaxy_prep import GalaxySpectrum, DeRedshiftOperation, BinningOperation, LogRebinningOperation, NormalizationOperation, ProcessedGalaxySpectrum
 from GalSpecFitX.combine_and_fit import SpectrumProcessor, InstrumentInfo, StarburstLibraryHandler, BPASSLibraryHandler
@@ -158,8 +160,7 @@ def main() -> None:
 
     # Settings parameters
     gal_filename = settings['galaxy_filename']
-    use_hst_cos = settings.getboolean('use_hst_cos')
-    segments = settings['segments'].split(',')
+    segment = settings['segment']
     bin_width = int(settings['bin_width'])
     default_noise = float(settings['default_noise'])
     z_guess = float(settings['z_guess'])
@@ -201,18 +202,23 @@ def main() -> None:
 
     star_form = library['star_form'].lower()
 
-    age_min = get_optional_config(library, 'age_min', default=None, convert_to=float)
+    age_range_str = library['age_range']  # e.g., "[0.0, 0.4]"
+    age_range = ast.literal_eval(age_range_str)  # Converts the string to a list
 
-    age_max = get_optional_config(library, 'age_max', default=None, convert_to=float)
+    metal_range_str = library['metal_range']
+    metal_range = ast.literal_eval(metal_range_str)
 
-    age_range = (age_min, age_max)
+    norm_range_str = library['norm_range']
+    norm_range = ast.literal_eval(norm_range_str)
 
     # Fit parameters
     processor_config = {
         'age_range': age_range,
+        'metal_range': metal_range,
+        'norm_range': norm_range,
         'FWHM_gal': FWHM_gal,
         'output_path': output_path,
-        'segments': segments,
+        'segment': segment,
         'default_noise': default_noise,
     }
 
@@ -239,42 +245,40 @@ def main() -> None:
         for key, value in config[section].items():
             logging.info(f"{key}: {value}")
 
-    # Process each segment
-    processed_segments = []
+    base_spectrum = GalaxySpectrum(input_path+'/'+gal_filename, segment)
+    operations = [
+        DeRedshiftOperation(z_guess),
+        BinningOperation(bin_width),
+        LogRebinningOperation(),
+        NormalizationOperation(norm_range)
+    ]
+    processed_spectrum = ProcessedGalaxySpectrum(base_spectrum, operations)
+    processed_data = processed_spectrum.apply_operations()
 
-    for segment in segments:
-        base_spectrum = GalaxySpectrum(input_path+'/'+gal_filename, segment, use_hst_cos)
-        operations = [
-            DeRedshiftOperation(z_guess),
-            BinningOperation(bin_width),
-            LogRebinningOperation(),
-            NormalizationOperation()
-        ]
-        processed_spectrum = ProcessedGalaxySpectrum(base_spectrum, operations)
-        processed_data = processed_spectrum.apply_operations()
+    # Save processed spectrum to a FITS file named bestfit.fits
+    base_spectrum.create_new_table(processed_data, output_path)
 
-        # Append the processed spectrum to the FITS file
-        base_spectrum.append_new_table(processed_data, output_path)
+    lam_gal_log_rebin, norm_flux_gal_log_rebin, norm_err_gal_log_rebin = processed_data
 
-        processed_segments.append(processed_data)
+    # Create the Matplotlib figure
+    fig, ax = plt.subplots(figsize=(11, 5))
+    plt.plot(lam_gal_log_rebin, norm_flux_gal_log_rebin, label=f'{segment} spectrum')
+    plt.plot(lam_gal_log_rebin, norm_err_gal_log_rebin, linestyle='None', marker='.', markersize=1, label='Error')
+    plt.title(f'{gal_filename} - Deredshifted, SpectRes Binned, Log-Rebinned, Median Normalized Spectrum')
+    plt.xlabel('Rest Wavelength (Å)')
+    plt.ylabel('Median Normalized Flux')
+    plt.legend()
+    plt.grid(alpha=0.5)
 
-        lam_gal_log_rebin, norm_flux_gal_log_rebin, norm_err_gal_log_rebin = processed_data
+    # Convert Matplotlib figure to Plotly
+    plotly_fig = tls.mpl_to_plotly(fig)
 
-        # Plot normalized log-binned spectrum
-        plt.figure(figsize=(10, 5))
-        plt.plot(lam_gal_log_rebin, norm_flux_gal_log_rebin, label=f'{segment} spectrum')
-        plt.plot(lam_gal_log_rebin, norm_err_gal_log_rebin, linestyle='None', marker='.', label='Error')
-        plt.title(f'{gal_filename} - Deredshifted, SpectRes Binned, Log-Rebinned, Median Normalized Spectrum')
-        plt.xlabel('Rest Wavelength (Å)')
-        plt.ylabel('Median Normalized Flux')
-        plt.legend()
-        plt.grid(alpha=0.5)
-        # plt.ylim(0.1, 1.6)
-        plt.savefig(os.path.join(output_path, f'normalized_log_rebinned_spectrum_{segment}.png'), dpi=150)  # Save the figure to a file
-        plt.close()
+    # Save the interactive plot as an HTML file
+    pio.write_html(plotly_fig, file=os.path.join(output_path,f'normalized_log_rebinned_spectrum_{segment}.html'), auto_open=False)
+
 
     # Initialize SpectrumProcessor for combining and fitting
-    processor = SpectrumProcessor(processor_config, processed_segments)
+    processor = SpectrumProcessor(processor_config, processed_data)
 
     # Call mask_spectral_lines if aborption wavelengths are provided
     if processor_config['absorp_lam'] is not None:
@@ -282,7 +286,7 @@ def main() -> None:
         assert instrument['R'].lower() != "none", "Must provide resolving power to use spectral line masking."
 
         R = float(instrument['R'])
-        processor_config['mask'] = processor.mask_spectral_lines(R, n_pix = (3,3))
+        processor_config['mask'] = processor.mask_spectral_lines(R)
 
     if library_name == 'STARBURST99':
         library_handler = StarburstLibraryHandler(imf, star_form, lib_path, evol_track)
@@ -291,7 +295,7 @@ def main() -> None:
 
     with Logger(log_filename) as logger:
         sys.stdout = logger
-        processor.process_combined_spectrum(library_handler)
+        processor.process_spectrum(library_handler)
         sys.stdout = sys.stdout.terminal  # Restore the original stdout
 
 if __name__ == '__main__':
