@@ -101,7 +101,7 @@ class bpass:
         to be younger than the age of the Universe at a given redshift.
     metal_range: array_like with shape (2,)
         ``[metal_min, metal_max]`` optional metallicity [M/H] range (inclusive)
-        for the STARBURST99 models (e.g.`` metal_range = [0, np.inf]`` to select only
+        for the STARBURST99 models (e.g.`` metal_range = [0.020, np.inf]`` to select only
         the spectra with Solar metallicity and above).
     norm_range: array_like with shape (2,)
         A two-elements vector specifying the wavelength range in Angstrom
@@ -146,7 +146,7 @@ class bpass:
 
     """
 
-    def __init__(self, pathname, velscale, lib_path, FWHM_gal=None, FWHM_tem=0.4,
+    def __init__(self, pathname, velscale, lib_path, FWHM_gal=None, FWHM_tem=1.0,
                  age_range=None, metal_range=None, norm_range=None, wave_range=None):
 
         files = glob.glob(pathname)
@@ -170,18 +170,16 @@ class bpass:
         lam_range_temp = fits.getdata(os.path.join(lib_path, 'BPASS', 'bpassv2_2_1_lam.fits'))
 
         cenwave_range_temp = np.zeros(len(lam_range_temp))
-
         cenwave_range_temp[:-1] = (lam_range_temp[1:] + lam_range_temp[:-1]) / 2
-
         cenwave_range_temp[-1] = lam_range_temp[-1] + ((lam_range_temp[-1] - lam_range_temp[-2]) / 2)
-        # print('original wavelength array', lam_range_temp)
-        # print('cenwaves', cenwave_range_temp)
+
+        FWHM_tem = np.ones(len(cenwave_range_temp))* FWHM_tem
 
         ssp_new, ln_lam_temp = util.log_rebin(cenwave_range_temp, ssp, velscale=velscale)[:2]
 
         lam_temp = np.exp(ln_lam_temp)
 
-        if norm_range is not None and norm_range!="continuum":
+        if norm_range is not None:
             band = (norm_range[0] <= lam_temp) & (lam_temp <= norm_range[1])
 
         templates = np.empty((ssp_new.size, n_ages, n_metal))
@@ -210,26 +208,13 @@ class bpass:
                 hdu = fits.open(files[p])
                 ssp = hdu[0].data
                 if FWHM_gal is not None:
-                    if np.isscalar(FWHM_gal):
-                        if sigma > 0.1:   # Skip convolution for nearly zero sigma
-                            ssp = ndimage.gaussian_filter1d(ssp, sigma)
-                    else:
-                        ssp = util.gaussian_filter1d(ssp, sigma)  # convolution with variable sigma
-                # print(files[p], cenwave_range_temp.shape, ssp.shape)
+                    ssp = util.varsmooth(cenwave_range_temp, ssp, sigma)
+
                 ssp_new = util.log_rebin(cenwave_range_temp, ssp, velscale=velscale)[0]
 
-                if norm_range is not None and norm_range!="continuum":
+                if norm_range is not None:
                     flux[j, k] = np.median(ssp_new[band])
                     ssp_new /= flux[j, k]   # Normalize every spectrum
-
-                elif norm_range == "continuum":
-
-                    # Fit a continuum using a Savitzky-Golay filter
-                    continuum = savgol_filter(ssp_new, window_length=300*2+1, polyorder=1)
-
-                    # Normalize every spectrum
-                    ssp_new /= continuum
-
 
                 templates[:, j, k] = ssp_new
                 age_grid[j, k] = age
@@ -249,6 +234,10 @@ class bpass:
             metal_grid = metal_grid[:, w]
             flux = flux[:, w]
 
+        if norm_range is None:
+            flux = np.median(templates[templates > 0])
+            templates /= flux  # Normalize by a scalar
+
         self.templates_full = templates
         self.ln_lam_temp_full = ln_lam_temp
         self.lam_temp_full = lam_temp
@@ -265,11 +254,11 @@ class bpass:
         self.n_ages, self.n_metal = age_grid.shape
         self.flux = flux
 
+
 ###############################################################################
 
-    def plot(self, weights, output_path=None, std_ages=None, std_metallicities=None, plot=True):
+    def plot(self, weights, output_path=None, std_ages=None, std_metallicities=None, a_v=0.0, std_A_v=None, plot=True):
 
-        # print('standard deviations', std_ages, std_metallicities)
         assert weights.ndim == 2, "`weights` must be 2-dim"
         assert self.age_grid.shape == self.metal_grid.shape == weights.shape, \
             "Input weight dimensions do not match"
@@ -324,16 +313,39 @@ class bpass:
 
             # Plot mean age line
             ax.axvline(mean_age, color='k', linestyle='--', linewidth=1.5)
+
+            # Display mean age
+            age_text = (
+                f"<Age> = {mean_age:.2f} \u00B1 {std_ages:.1e}" if std_ages is not None
+                else f"<Age> = {mean_age:.2f}"
+            )
             ax.text(
-                mean_age + 1, 0.9, f'<Age> = {mean_age:.2f} +/- {std_ages:.5f}',
-                verticalalignment='center', horizontalalignment='right', fontsize=10
+                mean_age, 0.9, age_text,
+                verticalalignment='center', horizontalalignment='center', fontsize=10
             )
 
             # Display mean metallicity
-            ax.text(
-                np.min(unique_ages) + 1, 0.5, f'<Z> = ({(mean_z/z_sol):.2f} +/- {std_metallicities:.5f})* Zsol',
-                verticalalignment='center', horizontalalignment='left', fontsize=10
+            metallicity_text = (
+                f"<Z> = ({(mean_z / z_sol):.2f} \u00B1 {std_metallicities:.1e}) * Zsol"
+                if std_metallicities is not None
+                else f"<Z> = {(mean_z / z_sol):.2f} * Zsol"
             )
+            ax.text(
+                mean_age, 0.5, metallicity_text,
+                verticalalignment='center', horizontalalignment='center', fontsize=10
+            )
+
+            # Display dust component
+            dust_text = (
+                f"A_v = {a_v:.3f} \u00B1 {std_A_v:.2e}"
+                if std_A_v is not None
+                else f"A_v = {a_v:.2f}"
+            )
+            ax.text(
+                mean_age, 0.7, dust_text,
+                verticalalignment='center', horizontalalignment='center', fontsize=10
+            )
+
 
             # Set title, axis labels and legend
             plt.title("Light Weights Fractions");
@@ -341,7 +353,11 @@ class bpass:
             ax.set_ylabel('Light fraction')
             ax.set_xlim(np.min(unique_ages) - 1, np.max(unique_ages) + 1)
             ax.set_ylim(0, 1)
-            ax.legend(loc='upper right')
-            plt.savefig(os.path.join(output_path,'light_weights.png'))
+            ax.legend(loc='best')
+            plt.grid(alpha=0.5)
 
-        return mean_age, mean_z
+
+            if output_path != None:
+                plt.savefig(os.path.join(output_path,'light_weights.png'), dpi=150)
+
+        return mean_age, mean_z / z_sol
