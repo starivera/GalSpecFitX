@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import plotly.tools as tls
 import plotly.io as pio
 import numpy as np
-from GalSpecFitX.galaxy_prep import GalaxySpectrum, DeRedshiftOperation, BinningOperation, LogRebinningOperation, NormalizationOperation, ProcessedGalaxySpectrum
+from GalSpecFitX.galaxy_prep import GalaxySpectrum, DeReddeningOperation, DeRedshiftOperation, BinningOperation, LogRebinningOperation, NormalizationOperation, ProcessedGalaxySpectrum
 from GalSpecFitX.combine_and_fit import SpectrumProcessor, InstrumentInfo, StarburstLibraryHandler, BPASSLibraryHandler
 
 def read_config(filename: str, input_path: str) -> configparser.ConfigParser:
@@ -155,6 +155,7 @@ def main() -> None:
     config = read_config(config_file, input_path)
     settings = config['Settings']
     instrument = config['instrument']
+    dereddening = config['dereddening']
     library = config['library']
     fit = config['fit']
 
@@ -179,6 +180,11 @@ def main() -> None:
         R = instrument.getfloat('R')
         FWHM_gal = InstrumentInfo(R, instr_lam_min, instr_lam_max).calc_FWHM_gal()
 
+    # Dereddening Parameters
+    ebv = float(dereddening.get('ebv', 0.0))
+    Rv = float(dereddening.get('Rv', 3.1))
+    ext_model = dereddening.get('model_name', 'CCM89').upper()
+
     # Library parameters
     lib_path = get_optional_config(library, 'lib_path', default=None, convert_to=str)
 
@@ -201,6 +207,7 @@ def main() -> None:
     imf = library['IMF'].lower()
 
     star_form = library['star_form'].lower()
+    star_evol = library['star_evol'].lower()
 
     age_range_str = library['age_range']  # e.g., "[0.0, 0.4]"
     age_range = ast.literal_eval(age_range_str)  # Converts the string to a list
@@ -237,6 +244,17 @@ def main() -> None:
 
         processor_config[key] = value
 
+    if key == 'absorp_lam':
+        if isinstance(value, list):
+            # Leave as list for default-window logic
+            processor_config[key] = value
+        elif isinstance(value, dict):
+            # Ensure keys are float if provided as strings
+            processor_config[key] = {float(k): float(v) for k, v in value.items()}
+        else:
+            raise ValueError("Invalid format for 'absorp_lam'; must be a list or a dict.")
+    else:
+        processor_config[key] = value
 
     # Log all configuration parameters
     logging.info("Configuration Parameters:")
@@ -247,6 +265,7 @@ def main() -> None:
 
     base_spectrum = GalaxySpectrum(input_path+'/'+gal_filename, segment)
     operations = [
+        DeReddeningOperation(ebv, ext_model, Rv),
         DeRedshiftOperation(z_guess),
         BinningOperation(bin_width),
         LogRebinningOperation(),
@@ -289,9 +308,9 @@ def main() -> None:
         processor_config['mask'] = processor.mask_spectral_lines(R)
 
     if library_name == 'STARBURST99':
-        library_handler = StarburstLibraryHandler(imf, star_form, lib_path, evol_track)
+        library_handler = StarburstLibraryHandler(imf, star_form, star_evol, lib_path, evol_track)
     elif library_name == 'BPASS':
-        library_handler = BPASSLibraryHandler(imf, star_form, lib_path)
+        library_handler = BPASSLibraryHandler(imf, star_form, star_evol, lib_path)
 
     with Logger(log_filename) as logger:
         sys.stdout = logger
