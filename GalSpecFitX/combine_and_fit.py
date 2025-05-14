@@ -5,14 +5,16 @@ This script runs the spectral fitting algorithm pPXF.
 Author: Isabel Rivera
 """
 import os
-from astropy.table import Table
-from astropy.io import fits
+import logging
+from pathlib import Path
+from abc import ABC, abstractmethod
+from typing import List, Tuple, Optional, Dict
+
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import List, Tuple, Optional, Dict
-import logging
-from abc import ABC, abstractmethod
-from lmfit.models import GaussianModel
+from astropy.io import fits
+from astropy.table import Table
+from lmfit import Model
 import plotly.tools as tls
 import plotly.io as pio
 import plotly.graph_objects as go
@@ -149,12 +151,13 @@ class StarburstLibraryHandler(LibraryHandler):
     templates from the Starburst99 library based on the specified parameters.
     """
 
-    def __init__(self, IMF_slope: str, star_form: str, lib_path: str, evol_track: str):
+    def __init__(self, IMF_slope: str, star_form: str, star_evol: str, lib_path: str, evol_track: str):
         """
         Initialize the handler with the necessary parameters for the Starburst99 library.
 
         :param IMF_slope: Initial Mass Function (IMF) slope for the Starburst99 templates.
         :param star_form: Star formation scenario (e.g., instantaneous, continuous).
+        :param star_evol: Star evolution scenario (e.g., single, binary).
         :param lib_path: Path to the base directory of the Starburst99 library.
         :param evol_track: Evolutionary track to be used for the Starburst99 models.
         """
@@ -162,6 +165,7 @@ class StarburstLibraryHandler(LibraryHandler):
         self.lib = lib
         self.IMF_slope = IMF_slope
         self.star_form = star_form
+        self.star_evol = star_evol
         self.lib_path = lib_path
         self.evol_track = evol_track
 
@@ -178,7 +182,7 @@ class StarburstLibraryHandler(LibraryHandler):
 
         :return: The retrieved Starburst99 templates.
         """
-        pathname = os.path.join(self.lib_path, 'STARBURST99', self.evol_track, self.star_form, self.IMF_slope, '*.fits')
+        pathname = os.path.join(self.lib_path, 'STARBURST99', self.evol_track, self.star_form, self.star_evol, self.IMF_slope, '*.fits')
         starburst99_lib = self.lib.starburst(pathname, velscale, self.lib_path, self.evol_track, age_range=age_range, metal_range=metal_range, norm_range=norm_range, FWHM_gal=FWHM_gal)
 
         return starburst99_lib
@@ -189,18 +193,20 @@ class BPASSLibraryHandler(LibraryHandler):
     This handler retrieves templates from the BPASS library based on the specified parameters.
     """
 
-    def __init__(self, IMF_slope: str, star_form: str, lib_path: str):
+    def __init__(self, IMF_slope: str, star_form: str, star_evol: str, lib_path: str):
         """
         Initialize the handler with the necessary parameters for the BPASS library.
 
         :param IMF_slope: Initial Mass Function (IMF) slope for the BPASS templates.
         :param star_form: Star formation scenario (e.g., single, binary).
+        :param star_evol: Star evolution scenario (e.g., single, binary).
         :param lib_path: Path to the base directory of the BPASS library.
         """
         import GalSpecFitX.bpass_util as lib  # Import only if using this handler
         self.lib = lib
         self.IMF_slope = IMF_slope
         self.star_form = star_form
+        self.star_evol = star_evol
         self.lib_path = lib_path
 
     def retrieve_templates(self, velscale: float, age_range: List[float], metal_range: List[float], norm_range: List[float], FWHM_gal: float) -> any:
@@ -215,7 +221,7 @@ class BPASSLibraryHandler(LibraryHandler):
 
         :return: The retrieved BPASS templates.
         """
-        pathname = os.path.join(self.lib_path, 'BPASS', self.star_form, self.IMF_slope, '*.fits')
+        pathname = os.path.join(self.lib_path, 'BPASS', self.star_form, self.star_evol, self.IMF_slope, '*.fits')
         bpass_lib = self.lib.bpass(pathname, velscale, self.lib_path, age_range=age_range, metal_range=metal_range, norm_range=norm_range, FWHM_gal=FWHM_gal)
 
         return bpass_lib
@@ -332,9 +338,24 @@ class TemplateRetrieval:
             hdul.append(bestfit_hdu)
 
         # Create the Matplotlib figure
-        fig, ax = plt.subplots(figsize=(11, 5))
+        fig, ax = plt.subplots(figsize=(6, 4))
         pp.plot()
         plt.grid(alpha=0.5)
+        lines = plt.gca().lines
+        lines[0].set_linewidth(0.5)
+        lines[0].set_linewidth(1.0)
+
+        # NV doublet (1238.82 and 1242.80 Å)
+        plt.axvline(x=.123882, color='purple', linestyle='--')
+        plt.axvline(x=.124280, color='purple', linestyle='--')
+        plt.text(.123882 - 0.0002, 1.4, 'N V', color='purple', va='bottom', ha='right')
+
+        # OV line (1371 Å)
+        plt.axvline(x=.137130, color='orange', linestyle='--')
+        plt.text(.137130 - 0.0002, 1.4, 'O V', color='orange', va='bottom', ha='right')
+
+        plt.xlim(.1220, .1270)
+        plt.ylim(0.0, 1.75)
         plt.savefig(os.path.join(output_path,'fitted_spectrum_static.png'), dpi=150)
 
         # Convert Matplotlib figure to Plotly
@@ -407,101 +428,79 @@ class SpectrumProcessor:
 
     def mask_spectral_lines(self, R: float) -> List[Tuple[float, float]]:
         """
-        Mask Milky Way absorption lines and fit Gaussian models to correct spectra.
+        Mask Milky Way absorption lines by fitting Gaussian models and estimating FWHM.
 
         :param R: Instrumental resolution as a float.
-
         :return: List of wavelength range tuples `(float, float)` masked during processing.
         """
+        logging.info(f'Beginning spectral line fitting')
 
-        lam_gal_log_rebin, norm_flux_gal_log_rebin, norm_err_gal_log_rebin = self.gal_spectrum
+        # Extract spectrum data
+        lam_gal, flux_gal, err_gal = self.gal_spectrum
 
-        delta_log_lambda = np.mean(np.diff(np.log10(lam_gal_log_rebin)))
-        n_pix_auto = int(np.ceil(np.log10(1 + 1 / R) / delta_log_lambda))
-        n_pix = (n_pix_auto, n_pix_auto)
+        updated_mask = updated_mask = self.config.get('mask', [])
 
-        logging.info(f'Using n_pix = {n_pix} based on resolution R = {R}')
+        def gaussian(x, amp, mu, sigma):
+            return amp * np.exp(-0.5 * ((x - mu) / sigma) ** 2)
 
-        logging.info('mask before adding milky way lines is: \n {}'.format(self.config['mask']))
+        absorp_config = self.config.get('absorp_lam', {})
 
-        for absorp_lam in self.config['absorp_lam']:
+        if isinstance(absorp_config, list):
+            absorp_dict = {lam: (lam / R) * 5 for lam in absorp_config}
+        elif isinstance(absorp_config, dict):
+            absorp_dict = {float(k): float(v) for k, v in absorp_config.items()}
+        else:
+            logging.warning("absorp_lam must be a list or dictionary. Skipping masking.")
+            return updated_mask
 
-            mask = (lam_gal_log_rebin > (absorp_lam-n_pix[0])) & (lam_gal_log_rebin < (absorp_lam+n_pix[1]))
-            wavelength = lam_gal_log_rebin[mask]
+        for absorp_lam, window in absorp_dict.items():
+            mask = (lam_gal > absorp_lam - window) & (lam_gal < absorp_lam + window)
 
-            logging.info(f'wavelength range for milky way line at {absorp_lam}: {wavelength}')
+            if not np.any(mask):
+                logging.warning(f"No data points found for absorption line at {absorp_lam}. Skipping.")
+                continue
 
-            if wavelength.size > 0:
+            x = lam_gal[mask]
+            y = flux_gal[mask]
+            y = y / np.max(y)  # Normalize
 
-                spectrum = norm_flux_gal_log_rebin[mask]
-                baseline = np.mean(spectrum)
-                spectrum -= baseline
+            # Estimate error; fall back to constant error if none
+            if err_gal is not None:
+                yerr = err_gal[mask]
+                weights = 1 / np.maximum(yerr, 1e-3)
+            else:
+                weights = np.ones_like(x)
 
-                sigma_inst = SPEED_OF_LIGHT/(R*2.355)
+            # Initial parameter guesses: amp, mu, sigma
+            amp_guess = 1 - np.min(y)
+            mu_guess = absorp_lam
+            sigma_guess = (absorp_lam / R) / 2.355
 
-                velocity = (wavelength - absorp_lam) / absorp_lam * SPEED_OF_LIGHT
-
-                # Step 1: Create lmfit model and set initial parameters
-                model = GaussianModel()
-                params = model.make_params(amplitude=-1, center=0, sigma=sigma_inst)  # sigma set to instrumental resolution
-
-                # Step 2: Fit the model to the spectrum
-                result = model.fit(spectrum, params, x=velocity, weights=1/norm_err_gal_log_rebin[mask])
-
-                # Step 3: Subtract the best-fit Gaussian from the spectrum
-                spectrum_corrected = spectrum - result.best_fit
-
-                if result.redchi > 2 or result.params['sigma'].value > 10 * sigma_inst:
-
-                    spectrum = spectrum_corrected
-
-                    # Step 1: Create lmfit model and set initial parameters
-                    model = GaussianModel()
-                    params = model.make_params(amplitude=-0.5, center=0, sigma=sigma_inst)  # sigma set to instrumental resolution
-
-                    # Step 2: Fit the model to the spectrum
-                    result = model.fit(spectrum, params, x=velocity, weights=1/norm_err_gal_log_rebin[mask])
-
-                    # Step 3: Subtract the best-fit Gaussian from the spectrum
-                    spectrum_corrected = spectrum - result.best_fit
-
-                fwhm_velocity = result.params['fwhm'].value  # FWHM in km/s
-
-                fwhm_wavelength = fwhm_velocity * absorp_lam / SPEED_OF_LIGHT
-
-                logging.info(f'FWHM_wavelength for absorption line {absorp_lam} is: {fwhm_wavelength}')
-
-                self.config.setdefault('mask', []).append((absorp_lam - fwhm_wavelength, absorp_lam + fwhm_wavelength))
-
-                # Print the fitting result
-                logging.info(result.fit_report())
-
-                # Create a Plotly figure
-                fig = go.Figure()
-
-                # Add traces for the plots
-                fig.add_trace(go.Scatter(x=wavelength, y=spectrum, mode='lines', name='Original Spectrum'))
-                fig.add_trace(go.Scatter(x=wavelength, y=result.best_fit, mode='lines', name='Fitted Gaussian', line=dict(dash='dash')))
-                fig.add_trace(go.Scatter(x=wavelength, y=spectrum_corrected, mode='lines', name='Corrected Spectrum'))
-                fig.add_trace(go.Scatter(x=[absorp_lam, absorp_lam], y=[np.min(spectrum_corrected), np.max(spectrum_corrected)],
-                                         mode='lines', name=f'{absorp_lam}', line=dict(color='red', dash='dot')))
-
-                # Update layout
-                fig.update_layout(
-                    title='Spectral Data',
-                    xaxis_title='Wavelength (Angstroms)',
-                    yaxis_title='Intensity',
-                    legend_title='Legend',
-                    template='plotly_white'
+            try:
+                from scipy.optimize import curve_fit
+                popt, _ = curve_fit(
+                    gaussian, x, 1 - y,
+                    p0=[amp_guess, mu_guess, sigma_guess],
+                    sigma=1 / weights,
+                    absolute_sigma=True
                 )
+                amp, mu, sigma = popt
+                fwhm = 2.355 * abs(sigma)
+                masked_region = (mu - fwhm, mu + fwhm)
+                updated_mask.append(masked_region)
 
-                # Save the interactive plot as an HTML file
-                fig.write_html(os.path.join(self.config['output_path'], f'{absorp_lam}_masked.html'), auto_open=False)
+                logging.info(f"Fitted absorption line at {mu:.2f} Å with FWHM = {fwhm:.2f} Å")
+            except RuntimeError as e:
+                logging.warning(f"Gaussian fit failed for line at {absorp_lam} Å: {e}")
+                continue
+
+        self.config['mask'] = updated_mask
+        logging.info(f'Updated mask: {updated_mask}')
+        logging.info(f'Ending spectral line fitting')
+
+        return updated_mask
 
 
-            logging.info('mask is now \n {}'.format(self.config['mask']))
-
-        return self.config['mask']
 
     def process_spectrum(self, library_handler: LibraryHandler) -> None:
         """

@@ -29,14 +29,12 @@ def age_metal(filename):
     :return: age (Gyr), [M/H]
 
     """
-    s = re.findall(r'Z[m|p][0-9]\.[0-9]{3}T[0-9]\.[0-9]{5}', filename)[0]
-    metal = s[:7]
+    match = re.search(r'Zp([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)T([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)', filename)
+    if match:
+        metal = float(match.group(1))
+        age = float(match.group(2))
 
-    age = float(s[8:])
-    if "Zm" in metal:
-        metal = -float(metal[2:])
-    elif "Zp" in metal:
-        metal = float(metal[2:])
+    # print(f'age, metal: {age}, {metal}')
 
     return age, metal
 
@@ -319,35 +317,37 @@ class starburst:
             ax.axvline(mean_age, color='k', linestyle='--', linewidth=1.5)
 
             # Display mean age
-            age_text = (
-                f"<Age> = {mean_age:.2f} \u00B1 {std_ages:.1e}" if std_ages is not None
-                else f"<Age> = {mean_age:.2f}"
-            )
+            if std_ages is not None:
+                std_age_str = f"{std_ages:.2f}" if int(round(std_ages * 10)) % 10 == 1 else f"{std_ages:.1f}"
+                age_text = f"<Age> = {mean_age:.1f} \u00B1 {std_age_str}"
+            else:
+                age_text = f"<Age> = {mean_age:.1f}"
             ax.text(
-                mean_age, 0.9, age_text,
-                verticalalignment='center', horizontalalignment='center', fontsize=10
+                mean_age+1, 0.9, age_text,
+                verticalalignment='center', horizontalalignment='left', fontsize=10
             )
 
             # Display mean metallicity
-            metallicity_text = (
-                f"<Z> = ({(mean_z / z_sol):.2f} \u00B1 {std_metallicities:.1e}) * Zsol"
-                if std_metallicities is not None
-                else f"<Z> = {(mean_z / z_sol):.2f} * Zsol"
-            )
+            if std_metallicities is not None:
+                std_z_str = f"{std_metallicities:.2f}" if int(round(std_metallicities * 10)) % 10 == 1 else f"{std_metallicities:.1f}"
+                metallicity_text = f"<Z> = ({(mean_z / z_sol):.1f} \u00B1 {std_z_str}) * Zsol"
+            else:
+                metallicity_text = f"<Z> = {(mean_z / z_sol):.1f} * Zsol"
             ax.text(
-                mean_age, 0.5, metallicity_text,
-                verticalalignment='center', horizontalalignment='center', fontsize=10
+                mean_age+1, 0.5, metallicity_text,
+                verticalalignment='center', horizontalalignment='left', fontsize=10
             )
 
             # Display dust component
-            dust_text = (
-                f"A_v = {a_v:.3f} \u00B1 {std_A_v:.2e}"
-                if std_A_v is not None
-                else f"A_v = {a_v:.2f}"
-            )
+            if std_A_v is not None:
+                std_str = f"{std_A_v:.2f}" if int(round(std_A_v * 10)) % 10 == 1 else f"{std_A_v:.1f}"
+                dust_text = f"A_v = {a_v:.1f} \u00B1 {std_str}"
+            else:
+                dust_text = f"A_v = {a_v:.1f}"
+
             ax.text(
-                mean_age, 0.7, dust_text,
-                verticalalignment='center', horizontalalignment='center', fontsize=10
+                mean_age+1, 0.7, dust_text,
+                verticalalignment='center', horizontalalignment='left', fontsize=10
             )
 
 

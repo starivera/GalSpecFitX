@@ -12,7 +12,9 @@ import configparser
 import numpy as np
 from astropy.io import fits
 from astropy.table import Table
+import astropy.units as u
 from spectres import spectres
+from dust_extinction.parameter_averages import (CCM89, O94, F99, F04, VCG04, GCC09, M14, G16, F19, D22, G23)
 
 from ppxf.ppxf_util import log_rebin
 
@@ -23,6 +25,64 @@ class SpectrumOperation(Protocol):
         """Apply the spectrum operation."""
 
         pass
+
+class DeReddeningOperation:
+    """Class for dereddening the spectrum using CCM89 extinction law."""
+
+    MODEL_REGISTRY = {
+        "CCM89": CCM89,
+        "O94": O94,
+        "F99": F99,
+        "F04": F04,
+        "VCG04": VCG04,
+        "GCC09": GCC09,
+        "M14": M14,
+        "G16": G16,
+        "F19": F19,
+        "D22": D22,
+        "G23": G23,
+    }
+
+    def __init__(self, ebv: float, model_name: str = "CCM89", Rv: float = 3.1):
+        """
+        Initialize the dereddening operation.
+
+        Parameters:
+        ebv (float): The E(B-V) reddening value.
+        model_name (str): Name of the extinction model (e.g., "CCM89", "F99", etc.).
+        Rv (float): Total-to-selective extinction ratio. Default is 3.1 for Milky Way.
+        """
+        self.ebv = ebv
+        self.model_name = model_name
+
+        model_class = self.MODEL_REGISTRY.get(model_name)
+        if model_class is None:
+            raise ValueError(f"Unsupported extinction model: '{model_name}'. Supported models: {list(self.MODEL_REGISTRY.keys())}")
+
+        self.ext_model = model_class(Rv=Rv)
+
+    def apply(self, spectrum: Tuple[np.ndarray, np.ndarray, np.ndarray]) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Apply dereddening using CCM89 extinction law.
+
+        Parameters:
+        spectrum (Tuple[np.ndarray, np.ndarray, np.ndarray]): The input spectrum as (wavelengths, fluxes, errors).
+
+        Returns:
+        Tuple[np.ndarray, np.ndarray, np.ndarray]: The dereddened spectrum.
+        """
+        waves, fluxes, errors = spectrum
+
+        # Convert to microns
+        waves_micron = waves * 1e-4 * u.micron
+
+        extinction_correction = self.ext_model.extinguish(waves_micron, Ebv=self.ebv)
+
+        corrected_fluxes = fluxes / extinction_correction
+        corrected_errors = errors / extinction_correction
+
+        return waves, corrected_fluxes, corrected_errors
+
 
 class DeRedshiftOperation:
     """Class for de-redshifting the spectrum."""
