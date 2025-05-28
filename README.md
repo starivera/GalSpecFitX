@@ -198,7 +198,10 @@ For Starburst99:
 
 | **Evolutionary Track (`evol_track`)**                | **Star Formation (`star_form`)** | **Initial Mass Function (`IMF`)** |
 |------------------------------------------------------|----------------------------------|-----------------------------------|
-| `geneva_high` -> Geneva tracks with high mass loss   | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       |
+| `padova` -> selection of the 1992 - 1994 Padova tracks.         | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       |
+| `padova_agb` -> selection of the 1992 - 1994 Padova tracks with thermally pulsing AGB stars added.          | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>   |
+| `geneva_std` -> selection of the 1994 Geneva tracks with "standard" mass-loss rates.   | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       |
+| `geneva_high` -> Geneva tracks with high mass-loss rates.  | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       |
 
 For further explanation of these choices see: https://massivestars.stsci.edu/starburst99/docs/run.html#IZ
 
