@@ -72,10 +72,6 @@ hdul = fits.HDUList([primary_hdu, hdu])
 hdul.writeto('resampled_spectrum.fits', overwrite=True)
 ```
 
-## Optional: Milky Way Absorption line masking
-
-GalSpecFitX allows the user to mask parts of a spectrum containing milky way absorption lines and exclude them from the fit. This is NOT line subtraction. The original flux density of the spectrum remains preserved. Masking is done by fitting a single gaussian to a line at a given wavelength and approximate width. The pixels within this range will simply not be included in the fit.
-
 ## Configuration File Parameters
 
 The software requires a configuration `.ini` file to run. The configuration file is divided into several sections, each of which contains specific parameters. Below is a breakdown of the required parameters for each section.
@@ -133,7 +129,7 @@ This section contains additional parameters for customizing the fitting process.
 | **Parameter**         | **Type**        | **Description**                                                                                               |
 |-----------------------|-----------------|---------------------------------------------------------------------------------------------------------------|
 | `start`               | None/list       | Initial kinematic parameters (velocity and sigma required in km/s) for stars. Setting this to None will set V, sigma = [0.0, 3*velocity scale per pixel].|
-| `absorp_lam`          | None/list/dict  | The wavelengths of known Milky Way absorption lines to be masked during spectral fitting (see config.ini). |
+| `absorp_lam`          | None/list/dict  | The wavelengths of known Milky Way absorption lines to be masked during spectral fitting (see Milky Way Absorption Line Masking section). |
 | `bias`                | float           | Optional bias term to control fit sensitivity; default is None.*                                              |
 | `bounds`              | None/list       | Parameter bounds (e.g., min and max values) for fitting constraints in start; default is None.          |
 | `clean`               | bool            | Enables outlier removal if True; default is False.                                                            |
@@ -162,6 +158,14 @@ This section contains additional parameters for customizing the fitting process.
 ---
 *See pPXF documentation for further explanation on these parameters.<br>
 **Computationally intensive and generally unnecessary.
+
+## Optional: Milky Way Absorption Line Masking
+
+GalSpecFitX allows the user to mask parts of a spectrum containing milky way absorption lines and exclude them from the fit. This is NOT line subtraction. Masking is done by fitting a single gaussian to a line at a given wavelength and approximate width. The pixels within this range will simply not be included during the fit. 
+You can provide this as either:
+- A list of wavelengths: default masking window of 5×(wavelength / R) will be used for each line. Example: absorp_lam = [5175.0, 5890.0, 3933.7]
+- A dictionary mapping each wavelength to a custom window (in Å). Example: absorp_lam = {"5175.0": 10.0, "5890.0": 15.0}
+If not provided or set to None, no absorption line masking will be applied.
 
 ## Spectral Fitting Parameters - Recommended
 
