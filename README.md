@@ -133,12 +133,7 @@ This section contains additional parameters for customizing the fitting process.
 | **Parameter**         | **Type**        | **Description**                                                                                               |
 |-----------------------|-----------------|---------------------------------------------------------------------------------------------------------------|
 | `start`               | None/list       | Initial kinematic parameters (velocity and sigma required in km/s) for stars. Setting this to None will set V, sigma = [0.0, 3*velocity scale per pixel].|
-| `absorp_lam`          | None/list/dict  | The wavelengths of known Milky Way absorption lines to be masked during spectral fitting. You can provide this as either:
-   - A list of wavelengths: default masking window of 5×(wavelength / R) will be used for each line.
-       Example: absorp_lam = [5175.0, 5890.0, 3933.7]
-   - A dictionary mapping each wavelength to a custom window (in Å).
-       Example: absorp_lam = {"5175.0": 10.0, "5890.0": 15.0}
- If not provided or set to None, no absorption line masking will be applied.|
+| `absorp_lam`          | None/list/dict  | The wavelengths of known Milky Way absorption lines to be masked during spectral fitting (see config.ini). |
 | `bias`                | float           | Optional bias term to control fit sensitivity; default is None.*                                              |
 | `bounds`              | None/list       | Parameter bounds (e.g., min and max values) for fitting constraints in start; default is None.          |
 | `clean`               | bool            | Enables outlier removal if True; default is False.                                                            |
