@@ -5,7 +5,7 @@ This software applies the Penalized PiXel-Fitting method (pPXF) created and dist
 
 ## HOW TO RUN
 1. Clone the GalSpecFitX repository.
-2. In the GalSpecFitX root directory create a new Conda environment: ```conda env create -n galspecfitx```
+2. In the GalSpecFitX root directory create a new Conda environment: ```conda env create -n galspecfitx -f environment.yml```
 3. After creating and activating the environment run ```pip install .``` You should now be able to run the software by calling ```galspecfitx``` from the command line.
 4. Create a directory for your galaxy data and copy over the 'config.ini' file from the GalSpecFitX root directory.
 5. You can use this configuration file as a template and adjust the parameters accordingly (see the Configuration File Parameters and Spectral Fitting Parameters - Recommended sections below).
@@ -21,53 +21,60 @@ This software applies the Penalized PiXel-Fitting method (pPXF) created and dist
    ```
 
 ## DATA PREPARATION
-This software prepares a raw galaxy spectrum for spectral fitting by performing de-redshifting, binning, log re-binning and median normalization routines. This ensures the best compatibility with the fitting algorithm. Multiple spectra can be combined by creating an Astropy FITS table for each spectrum with columns 'wavelength', 'flux', and 'error'. Each table should then be stored in a separate hdu extension under one FITS file. Please provide a list of the extension numbers to the 'segments' parameter of your configuration file (e.g. 1,2,3,...). If multiple 'segments' are listed, the code will automatically combine the data into one combined spectrum ordered by smallest to largest wavelength before performing the fit.
+This software prepares a raw galaxy spectrum for spectral fitting by performing de-reddening, de-redshifting, binning, log re-binning and median normalization routines. This ensures the best compatibility with the fitting algorithm. GalSpecFitX requires a FITS file containing an Astropy table with ‘wavelength,’ ‘flux,’ and ‘error,’ columns. The spectrum must be evenly sampled; otherwise, continuum fitting may become misaligned. 
 
-Please see the example below for instructions on how to save your spectrum to an Astropy table and save it as a FITS file in Python.
+Please see the example below for instructions on how to use Python to merge multiple spectra and the spectres package to achieve even sampling. The final data are stored in an Astropy table within a single HDU extension of a FITS file. 
 
 ```
 from astropy.table import Table
 from astropy.io import fits
 import numpy as np
+from spectres import spectres
 
-# Creating sample spectra
-
+# Function to create sample spectrum
 def create_sample_spectrum(lam_min, lam_max):
     wavelength = np.linspace(lam_min, lam_max, 1000)
     flux = np.random.random(1000)
     noise = np.full_like(flux, 0.05)
-    return wavelength, flux, error
+    return wavelength, flux, noise  
 
 # Creating multiple spectra
-spectrum1 = create_sample_data(4000, 5000)
-spectrum2 = create_sample_data(5000, 6000)
-spectrum3 = create_sample_data(6000, 7000)
+spectrum1 = create_sample_spectrum(4000, 5000) 
+spectrum2 = create_sample_spectrum(5000, 6000)
+spectrum3 = create_sample_spectrum(6000, 7000)
 
-# Create Astropy Tables
-table1 = Table(spectrum1, names=('wavelength', 'flux', 'error'))
-table2 = Table(spectrum2, names=('wavelength', 'flux', 'error'))
-table3 = Table(spectrum3, names=('wavelength', 'flux', 'error'))
+# Combine multiple spectra
+combined_lam = np.concatenate([spectrum1[0], spectrum2[0], spectrum3[0]])
+combined_flux = np.concatenate([spectrum1[1], spectrum2[1], spectrum3[1]])
+combined_noise = np.concatenate([spectrum1[2], spectrum2[2], spectrum3[2]])
 
-# Convert the tables to FITS HDUs and give them specific names
-hdu1 = fits.BinTableHDU(table1, name='SPECTRUM1')
-hdu2 = fits.BinTableHDU(table2, name='SPECTRUM2')
-hdu3 = fits.BinTableHDU(table3, name='SPECTRUM3')
+# Create evenly sampled wavelength array
+combined_lam_resamp = np.arange(combined_lam[0], combined_lam[-1], combined_lam[1] - combined_lam[0]) 
+
+# Use spectres to resample the combined spectrum
+combined_flux_resamp, combined_noise_resamp = spectres(combined_lam_resamp, combined_lam, combined_flux, combined_noise, fill=0)
+
+spectrum_resamp = [combined_lam_resamp, combined_flux_resamp, combined_noise_resamp]
+
+# Create Astropy Table
+table = Table(spectrum_resamp, names=('wavelength', 'flux', 'error'))
+
+# Convert the table to a FITS HDU 
+hdu = fits.BinTableHDU(table, name='FULL_SPECTRUM')
 
 # Create a Primary HDU
 primary_hdu = fits.PrimaryHDU()
 
-# Create an HDU list with the primary HDU and the table HDUs:
-hdul = fits.HDUList([primary_hdu, hdu1, hdu2, hdu3])
+# Create an HDU list with the primary HDU and the table HDU:
+hdul = fits.HDUList([primary_hdu, hdu])
 
 # Write the HDU list to a new FITS file
-hdul.writeto('example_multiple_spectra.fits', overwrite=True)
+hdul.writeto('resampled_spectrum.fits', overwrite=True)
 ```
-
-NOTE: For HST/COS data the 'segments' parameter should be a list of the detector segments contained in an x1dsum.fits file (e.g. FUVA,FUVB).
 
 ## Optional: Milky Way Absorption line masking
 
-GalSpecFitX allows the user to mask parts of a spectrum containing milky way absorption lines and exclude them from the fit. This is NOT line subtraction. The original flux density of the spectrum remains preserved. Masking is done by fitting a single gaussian to a line at a given wavelength and finding its approximate width. The pixels within this range will simply not be included in the fit.
+GalSpecFitX allows the user to mask parts of a spectrum containing milky way absorption lines and exclude them from the fit. This is NOT line subtraction. The original flux density of the spectrum remains preserved. Masking is done by fitting a single gaussian to a line at a given wavelength and approximate width. The pixels within this range will simply not be included in the fit.
 
 ## Configuration File Parameters
 
@@ -79,14 +86,13 @@ This section contains general settings related to the galaxy data processing.
 | Parameter         | Type   | Description                                                                 |
 |-------------------|--------|-----------------------------------------------------------------------------|
 | `galaxy_filename` | string | Name of the galaxy spectrum file.                                           |
-| `use_hst_cos`     | bool   | Whether to use HST/COS data (`True` or `False`).                            |
-| `segments`        | string | Comma-separated list of segments to process.                                |
+| `segment`         | string | FITS HDU extension number corresponding to the data you want to process.    |
 | `bin_width`       | int    | Width for binning the galaxy spectrum.                                      |
-| `default_noise`   | float  | Default noise value for the galaxy spectrum.                                |
+| `default_noise`   | float  | Default noise value for the galaxy spectrum. Default is 1.                  |
 | `z_guess`         | float  | Initial guess for the redshift of the galaxy.                               |
 
 ### 2. Instrument Section
-This section contains information about the instrument used for the observations. Note: These parameters do not affect the continuum fit; they are exclusively used for emission line fitting and the absorption masking feature.
+This section contains information about the instrument used for the observations. Used for convolution of the spectral templates and the absorption masking feature.
 
 | Parameter         | Type   | Description                                                                 |
 |-------------------|--------|-----------------------------------------------------------------------------|
@@ -96,7 +102,17 @@ This section contains information about the instrument used for the observations
 | `instr_lam_max`   | float  | Maximum wavelength of the instrument in microns.                            |
 | `R`               | float  | Resolving power of the instrument.                                          |
 
-### 3. Library Section
+### 3. Dereddening Section
+This section contains parameters for removing Milky Way foreground from a galaxy spectrum.
+
+| Parameter   | Type   | Description                                                                       |
+|-------------|--------|-----------------------------------------------------------------------------------|
+| `ebv`       | float  | E(B-V) reddening value to use in the extinction correction.  |
+| `model_name`| string | Name of the extinction model. Options are CCM89, 094, F99, F04, VCG04, GCC09, M14, G16, F19, D22, G23.  |
+| `Rv`        | float  | Total-to-selective extinction ratio Rv (usually 3.1 for Milky Way). |
+
+
+### 4. Library Section
 This section defines the stellar population models used for fitting.
 
 | Parameter   | Type   | Description                                                                       |
@@ -105,28 +121,32 @@ This section defines the stellar population models used for fitting.
 | `Library`   | string | Name of the library for stellar population templates (`STARBURST99` or `BPASS`).  |
 | `evol_track`| string | (Optional) Evolutionary track. Only applies to Starburst99 libraries. If not provided default is `geneva_high`. |
 | `IMF`       | string | Initial mass function (IMF) used in the library (See Accessing Libraries section).    |
-| `star_form` | string | Star formation model (See Accessing Libraries section).                       |
-| `age_min`   | float  | (Optional) Minimum stellar population age for fitting (in Gyr).                   |
-| `age_max`   | float  | (Optional) Maximum stellar population age for fitting (in Gyr).                   |
+| `star_form` | string | Star formation model (Instantaneous or Continuous).                       |
+| `star_pop`  | string | Type of stellar population (Single or Binary).                       |
+| `age_range` | list of float | Age range for stellar templates (in Gyr) (e.g.[0.0, 1.0]).                    |
+| `metal_range`| list of float | Metallicity range for stellar templates (e.g. [0.0, 0.020], Z_solar = 0.020).                   |
+| `norm_range` | list of float | Wavelength range to be used to normalize the stellar templates and galaxy spectrum (in Angstroms). If None provided median normalization of the entire spectrum is performed. |
 
-### 4. Fit Section
+### 5. Fit Section
 This section contains additional parameters for customizing the fitting process. These parameters are optional and can vary depending on the user's needs. All available fitting parameters and default values are also listed in the provided `config.ini` template.
 
 | **Parameter**         | **Type**        | **Description**                                                                                               |
 |-----------------------|-----------------|---------------------------------------------------------------------------------------------------------------|
-| `start_stars`         | None/list       | Initial kinematic parameters (velocity and sigma required in km/s) for stars; defaults are used if set to None.       |
-| `start_gas`           | None/list       | Initial kinematic parameters (velocity and sigma required in km/s) for gas; defaults are used if set to None.         |
+| `start`               | None/list       | Initial kinematic parameters (velocity and sigma required in km/s) for stars. Setting this to None will set V, sigma = [0.0, 3*velocity scale per pixel].|
+| `absorp_lam`          | None/list/dict  | The wavelengths of known Milky Way absorption lines to be masked during spectral fitting. You can provide this as either:
+   - A list of wavelengths: default masking window of 5×(wavelength / R) will be used for each line.
+       Example: absorp_lam = [5175.0, 5890.0, 3933.7]
+   - A dictionary mapping each wavelength to a custom window (in Å).
+       Example: absorp_lam = {"5175.0": 10.0, "5890.0": 15.0}
+ If not provided or set to None, no absorption line masking will be applied.|
 | `bias`                | float           | Optional bias term to control fit sensitivity; default is None.*                                              |
-| `bounds_stars`        | None/list       | Parameter bounds (e.g., min and max values) for fitting constraints in start_stars; default is None.          |
-| `bounds_gas`          | None/list       | Parameter bounds (e.g., min and max values) for fitting constraints in start_gas; default is None.            |
+| `bounds`              | None/list       | Parameter bounds (e.g., min and max values) for fitting constraints in start; default is None.          |
 | `clean`               | bool            | Enables outlier removal if True; default is False.                                                            |
 | `constr_templ`        | dict            | Constraints applied to templates during fitting; default is None.*                                             |
 | `constr_kinem`        | dict            | Constraints on kinematic parameters (e.g., velocity); default is None.*                                        |
 | `degree`              | int             | Degree of additive polynomial for continuum fitting; default is 4. Set ``degree=-1`` to not include any additive polynomial.|
-| `dust_stars`          | None/dict       | Dust attenuation parameters for stars; default is None. {"start":..., "bounds":..., "fixed":...}              |
-| `dust_gas`            | None/dict       | Dust attenuation parameters for gas; default is None. {"start":..., "bounds":..., "fixed":...}                |
-| `fixed_stars`         | None/list       | Boolean vector set to ``True`` where a given kinematic parameter has to be held fixed with the value given in ``start_stars``. This is a list with the same dimensions as ``start_stars``. |
-| `fixed_gas`           | None/list       | Boolean vector set to ``True`` where a given kinematic parameter has to be held fixed with the value given in ``start_gas``. This is a list with the same dimensions as ``start_gas``. |
+| `dust`                | None/dict       | Dust attenuation parameters for stars; default is None. {"start":..., "bounds":..., "fixed":...}              |
+| `fixed`               | None/list       | Boolean vector set to ``True`` where a given kinematic parameter has to be held fixed with the value given in ``start``. This is a list with the same dimensions as ``start``. |
 | `fraction`            | float           | Ratio between stars and gas component.*                                                                        |
 | `ftol`                | float           | Tolerance level for fit convergence; default is 1e-4.                                                         |
 | `global_search`**     | bool or dict    | Enables global optimization of the nonlinear parameters (kinematics) before starting the usual local optimizer.if True; default is False. |
@@ -135,6 +155,7 @@ This section contains additional parameters for customizing the fitting process.
 | `mask`                | None/list       | List of wavelength ranges to exclude from fit; default is None (e.g. [[lam_i1, lam_f1], [lami2, lamf2], ...]                                              |
 | `method`              | str             | Algorithm to perform the non-linear minimization step (options vary based on pPXF settings); default is `capfit`. |
 | `mdegree`             | int             | Degree of multiplicative polynomial for continuum fitting; default is 0.                                      |
+| `n_iterations`        | int             | Number of iterations of the fit to perform. Calculates uncertaintaties using Monte Carlo simulations (see Rivera et al. 2025 for more detail).      |
 | `quiet`               | bool            | Suppresses verbose output of the best fitting parameters at the end of the fit if True; default is False.     |
 | `absorp_lam`          | None/list       | Absorption line central wavelengths for milky way line masking; default is None.                              |
 | `sigma_diff`          | float           | Quadratic difference in km/s defined as: ```sigma_diff**2 = sigma_inst**2 - sigma_temp**2``` between the instrumental dispersion of the galaxy spectrum and the instrumental dispersion of the template spectra.                                                |
