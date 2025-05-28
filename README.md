@@ -173,7 +173,7 @@ These are the parameters I recommend focusing on as they tend to have the greate
 
 - **start**: Initial guess for the LOSVD parameters (V, sigma, ...) for the stars component.  
 - **Degree**: Degree of the additive Legendre polynomial used to correct the template continuum shape during the fit. Set ``degree=-1`` to not include any additive polynomial. 
-- **Linear**: If set to True only performs a linear least-squares routine for the templates and additive polynomial weights. Setting this to true may provide a better fit to the kinematic components (V, sigma, h3,..., hM), but note that dust attenuation will not be fit when this is done. A workaround would be to set the **bounds** parameter based on the fit this provides, and then set Linear back to False.
+- **Linear**: If set to True only performs a linear least-squares routine for the templates and additive polynomial weights. Setting this to true may provide a better fit to the kinematic components (V, sigma, ...), but note that dust attenuation will not be fit when this is done. A workaround would be to set the **bounds** parameter based on the fit this provides, and then set Linear back to False.
 
 ## Accessing the Starburst99 and BPASS Libraries
 After following the installation instructions you will have automatic access to the sample libraries located in the GalSpecFitX subfolder ``sample_libraries``. The sample libraries provided are the Starburst99 Geneva High evolutionary track, Salpeter IMF for instantaneous star formation models, and BPASS Salpeter IMF (`imf135all_100`) single star formation models. The provided config.ini file uses these libraries by default by setting the `lib_path` parameter to None.
