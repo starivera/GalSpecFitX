@@ -81,11 +81,11 @@ This section contains general settings related to the galaxy data processing.
 
 | Parameter         | Type   | Description                                                                 |
 |-------------------|--------|-----------------------------------------------------------------------------|
-| `galaxy_filename` | string | Name of the galaxy spectrum file.                                           |
+| `galaxy_filename` | string | Name of the galaxy spectrum FITS file.                                           |
 | `segment`         | string | FITS HDU extension number corresponding to the data you want to process.    |
-| `bin_width`       | int    | Width for binning the galaxy spectrum.                                      |
+| `bin_width`       | int    | Width for binning the galaxy spectrum. 1 performs no binning.     |
 | `default_noise`   | float  | Default noise value for the galaxy spectrum. Default is 1.                  |
-| `z_guess`         | float  | Initial guess for the redshift of the galaxy.                               |
+| `z_guess`         | float  | Initial guess for the redshift of the galaxy. 0 performs no redshifting.                               |
 
 ### 2. Instrument Section
 This section contains information about the instrument used for the observations. Used for convolution of the spectral templates and the absorption masking feature.
@@ -103,7 +103,7 @@ This section contains parameters for removing Milky Way foreground from a galaxy
 
 | Parameter   | Type   | Description                                                                       |
 |-------------|--------|-----------------------------------------------------------------------------------|
-| `ebv`       | float  | E(B-V) reddening value to use in the extinction correction.  |
+| `ebv`       | float  | E(B-V) reddening value to use in the extinction correction. 0 performs no reddening. |
 | `model_name`| string | Name of the extinction model. Options are CCM89, 094, F99, F04, VCG04, GCC09, M14, G16, F19, D22, G23.  |
 | `Rv`        | float  | Total-to-selective extinction ratio Rv (usually 3.1 for Milky Way). |
 
@@ -115,13 +115,13 @@ This section defines the stellar population models used for fitting.
 |-------------|--------|-----------------------------------------------------------------------------------|
 | `lib_path`  | str/None | Path to library (BPASS or STARBURST99). If None or not provided only sample libraries are used.  |
 | `Library`   | string | Name of the library for stellar population templates (`STARBURST99` or `BPASS`).  |
-| `evol_track`| string | (Optional) Evolutionary track. Only applies to Starburst99 libraries. If not provided default is `geneva_high`. |
+| `evol_track`| string | Evolutionary track. Only applies to Starburst99 libraries. Default is `geneva_high`. |
 | `IMF`       | string | Initial mass function (IMF) used in the library (See Accessing Libraries section).    |
 | `star_form` | string | Star formation model (Instantaneous or Continuous).                       |
 | `star_pop`  | string | Type of stellar population (Single or Binary).                       |
 | `age_range` | list of float | Age range for stellar templates (in Gyr) (e.g.[0.0, 1.0]).                    |
 | `metal_range`| list of float | Metallicity range for stellar templates (e.g. [0.0, 0.020], Z_solar = 0.020).                   |
-| `norm_range` | list of float | Wavelength range to be used to normalize the stellar templates and galaxy spectrum (in Angstroms). If None provided median normalization of the entire spectrum is performed. |
+| `norm_range` | list of float | Wavelength range to be used to normalize the stellar templates and galaxy spectrum (in Å). If None provided median normalization of the entire spectrum is performed. |
 
 ### 5. Fit Section
 This section contains additional parameters for customizing the fitting process. These parameters are optional and can vary depending on the user's needs. All available fitting parameters and default values are also listed in the provided `config.ini` template.
