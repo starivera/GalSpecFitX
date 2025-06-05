@@ -11,7 +11,7 @@ import plotly.tools as tls
 import plotly.io as pio
 import numpy as np
 from GalSpecFitX.galaxy_prep import GalaxySpectrum, DeReddeningOperation, DeRedshiftOperation, BinningOperation, LogRebinningOperation, NormalizationOperation, ProcessedGalaxySpectrum
-from GalSpecFitX.combine_and_fit import SpectrumProcessor, InstrumentInfo, StarburstLibraryHandler, BPASSLibraryHandler
+from GalSpecFitX.combine_and_fit import SpectrumProcessor, InstrumentInfo, Starburst99LibraryHandler, BPASSLibraryHandler
 
 def read_config(filename: str, input_path: str) -> configparser.ConfigParser:
     """Read configuration file.
@@ -207,7 +207,7 @@ def main() -> None:
     imf = library['IMF'].lower()
 
     star_form = library['star_form'].lower()
-    star_evol = library['star_evol'].lower()
+    star_pop = library['star_pop'].lower()
 
     age_range_str = library['age_range']  # e.g., "[0.0, 0.4]"
     age_range = ast.literal_eval(age_range_str)  # Converts the string to a list
@@ -308,9 +308,9 @@ def main() -> None:
         processor_config['mask'] = processor.mask_spectral_lines(R)
 
     if library_name == 'STARBURST99':
-        library_handler = StarburstLibraryHandler(imf, star_form, star_evol, lib_path, evol_track)
+        library_handler = Starburst99LibraryHandler(imf, star_form, star_pop, lib_path, evol_track)
     elif library_name == 'BPASS':
-        library_handler = BPASSLibraryHandler(imf, star_form, star_evol, lib_path)
+        library_handler = BPASSLibraryHandler(imf, star_form, star_pop, lib_path)
 
     with Logger(log_filename) as logger:
         sys.stdout = logger

@@ -14,7 +14,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
 from astropy.table import Table
-from lmfit import Model
 import plotly.tools as tls
 import plotly.io as pio
 import plotly.graph_objects as go
@@ -145,19 +144,19 @@ class LibraryHandler(ABC):
         """
         pass
 
-class StarburstLibraryHandler(LibraryHandler):
+class Starburst99LibraryHandler(LibraryHandler):
     """
     Handler for Starburst99 stellar population models. This handler is used to retrieve
     templates from the Starburst99 library based on the specified parameters.
     """
 
-    def __init__(self, IMF_slope: str, star_form: str, star_evol: str, lib_path: str, evol_track: str):
+    def __init__(self, IMF_slope: str, star_form: str, star_pop: str, lib_path: str, evol_track: str):
         """
         Initialize the handler with the necessary parameters for the Starburst99 library.
 
         :param IMF_slope: Initial Mass Function (IMF) slope for the Starburst99 templates.
         :param star_form: Star formation scenario (e.g., instantaneous, continuous).
-        :param star_evol: Star evolution scenario (e.g., single, binary).
+        :param star_pop: Star population scenario (e.g., single, binary).
         :param lib_path: Path to the base directory of the Starburst99 library.
         :param evol_track: Evolutionary track to be used for the Starburst99 models.
         """
@@ -165,7 +164,7 @@ class StarburstLibraryHandler(LibraryHandler):
         self.lib = lib
         self.IMF_slope = IMF_slope
         self.star_form = star_form
-        self.star_evol = star_evol
+        self.star_pop = star_pop
         self.lib_path = lib_path
         self.evol_track = evol_track
 
@@ -182,8 +181,8 @@ class StarburstLibraryHandler(LibraryHandler):
 
         :return: The retrieved Starburst99 templates.
         """
-        pathname = os.path.join(self.lib_path, 'STARBURST99', self.evol_track, self.star_form, self.star_evol, self.IMF_slope, '*.fits')
-        starburst99_lib = self.lib.starburst(pathname, velscale, self.lib_path, self.evol_track, age_range=age_range, metal_range=metal_range, norm_range=norm_range, FWHM_gal=FWHM_gal)
+        pathname = os.path.join(self.lib_path, 'STARBURST99', self.evol_track, self.star_form, self.star_pop, self.IMF_slope, '*.fits')
+        starburst99_lib = self.lib.starburst99(pathname, velscale, self.lib_path, self.evol_track, age_range=age_range, metal_range=metal_range, norm_range=norm_range, FWHM_gal=FWHM_gal)
 
         return starburst99_lib
 
@@ -193,20 +192,20 @@ class BPASSLibraryHandler(LibraryHandler):
     This handler retrieves templates from the BPASS library based on the specified parameters.
     """
 
-    def __init__(self, IMF_slope: str, star_form: str, star_evol: str, lib_path: str):
+    def __init__(self, IMF_slope: str, star_form: str, star_pop: str, lib_path: str):
         """
         Initialize the handler with the necessary parameters for the BPASS library.
 
         :param IMF_slope: Initial Mass Function (IMF) slope for the BPASS templates.
         :param star_form: Star formation scenario (e.g., single, binary).
-        :param star_evol: Star evolution scenario (e.g., single, binary).
+        :param star_pop: Star population scenario (e.g., single, binary).
         :param lib_path: Path to the base directory of the BPASS library.
         """
         import GalSpecFitX.bpass_util as lib  # Import only if using this handler
         self.lib = lib
         self.IMF_slope = IMF_slope
         self.star_form = star_form
-        self.star_evol = star_evol
+        self.star_pop = star_pop
         self.lib_path = lib_path
 
     def retrieve_templates(self, velscale: float, age_range: List[float], metal_range: List[float], norm_range: List[float], FWHM_gal: float) -> any:
@@ -221,7 +220,7 @@ class BPASSLibraryHandler(LibraryHandler):
 
         :return: The retrieved BPASS templates.
         """
-        pathname = os.path.join(self.lib_path, 'BPASS', self.star_form, self.star_evol, self.IMF_slope, '*.fits')
+        pathname = os.path.join(self.lib_path, 'BPASS', self.star_form, self.star_pop, self.IMF_slope, '*.fits')
         bpass_lib = self.lib.bpass(pathname, velscale, self.lib_path, age_range=age_range, metal_range=metal_range, norm_range=norm_range, FWHM_gal=FWHM_gal)
 
         return bpass_lib
@@ -338,24 +337,24 @@ class TemplateRetrieval:
             hdul.append(bestfit_hdu)
 
         # Create the Matplotlib figure
-        fig, ax = plt.subplots(figsize=(6, 4))
+        fig, ax = plt.subplots(figsize=(20, 9))
         pp.plot()
         plt.grid(alpha=0.5)
         lines = plt.gca().lines
         lines[0].set_linewidth(0.5)
         lines[0].set_linewidth(1.0)
 
-        # NV doublet (1238.82 and 1242.80 Å)
-        plt.axvline(x=.123882, color='purple', linestyle='--')
-        plt.axvline(x=.124280, color='purple', linestyle='--')
-        plt.text(.123882 - 0.0002, 1.4, 'N V', color='purple', va='bottom', ha='right')
-
-        # OV line (1371 Å)
-        plt.axvline(x=.137130, color='orange', linestyle='--')
-        plt.text(.137130 - 0.0002, 1.4, 'O V', color='orange', va='bottom', ha='right')
-
-        plt.xlim(.1220, .1270)
-        plt.ylim(0.0, 1.75)
+        # # NV doublet (1238.82 and 1242.80 Å)
+        # plt.axvline(x=.123882, color='purple', linestyle='--')
+        # plt.axvline(x=.124280, color='purple', linestyle='--')
+        # plt.text(.123882 - 0.0002, 1.4, 'N V', color='purple', va='bottom', ha='right')
+        #
+        # # OV line (1371 Å)
+        # plt.axvline(x=.137130, color='orange', linestyle='--')
+        # plt.text(.137130 - 0.0002, 1.4, 'O V', color='orange', va='bottom', ha='right')
+        #
+        # plt.xlim(.1220, .1270)
+        # plt.ylim(0.0, 1.75)
         plt.savefig(os.path.join(output_path,'fitted_spectrum_static.png'), dpi=150)
 
         # Convert Matplotlib figure to Plotly

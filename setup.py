@@ -12,7 +12,6 @@ setup(
         'numpy==1.26.2',
         'ppxf==9.1.1',
         'spectres==2.2.0',
-        'lmfit==1.3.1',
         'plotly==5.22.0',
     ],
     entry_points={
