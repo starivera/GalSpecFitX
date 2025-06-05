@@ -1,14 +1,20 @@
 ###############################################################################
-# This file contains the 'starburst' class with functions to construct
-# a library of STARBURST99 templates and interpret and display the output
-# of pPXF when using those templates as input.
-
+# This module defines the `bpass` class and supporting functions to:
+#   - Load a grid of BPASS SSP spectral templates
+#   - Extract age and metallicity from filenames
+#   - Process and rebin spectra for use with pPXF
+#   - Visualize template light-weight solutions
+#
+# Originally adapted from `miles_util.py` and `sps_util.py` in the pPXF
+# package (v8.2.1 and v9.1.1).
+#
+# Developed by Isabel Rivera, STScI, 16 June 2024
+###############################################################################
 import os
 import glob, re
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import ndimage
 from astropy.io import fits
 
 import ppxf.ppxf_util as util
@@ -17,126 +23,102 @@ z_sol = 0.020
 
 def age_metal(filename):
     """
-    Extract the age and metallicity from the name of a file of
-    the STARBURST99 library of Single Stellar Population models as
-    downloaded from https://www.stsci.edu/science/starburst99/docs/default.htm as of 2024
+    Extract age and metallicity from a BPASS template filename.
 
-    This function relies on the template file containing a substring of the
-    precise form like Zp0.001T0.00001, specifying the metallicity and age.
+    Assumes the filename includes a substring of the form:
+    'Zp[M].T[A]', where M is the metallicity (Z) and A is the age (T),
+    both in float format (Gyr for age).
 
-    :param filename: string possibly including full path
-        (e.g. 'starburst_lib/stellar_templates/GENEVA_high_1.30_2.30.Zp0.001T0.00001_inst.fits')
-    :return: age (Gyr), [M/H]
+    Example:
+        '...Zp0.001T0.00001_inst.fits'
 
+    Parameters
+    ----------
+    filename : str
+        Full or relative path to a BPASS template FITS file.
+
+    Returns
+    -------
+    age : float
+        Stellar population age in Gyr.
+    metal : float
+        Metallicity in fractional solar units (e.g., 0.020 = Solar).
     """
+
     match = re.search(r'Zp([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)T([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)', filename)
+
     if match:
         metal = float(match.group(1))
         age = float(match.group(2))
-
-    return age, metal
+        return age, metal
+    else:
+        raise ValueError(f"Filename {filename} does not contain 'Zp...T...' pattern.")
 
 ###############################################################################
-# MODIFICATION HISTORY:
-#   V1.0.0: Adapted from miles_util.py and sps_util.py provided in the pPXF
-#       package version 8.2.1 and 9.1.1 respectively.
-#     - Written by Isabel Rivera, STScI, 16 June 2024 for specific use of the
-#       STARBURST99 templates.
 
 class bpass:
     """
-    This code produces an array of logarithmically-binned templates by reading
-    the spectra from the Single Stellar Population (SSP) STARBURST99
-    library by Claus Leitherer, Daniel Schaerer, Jeff Goldader, Rosa Gonzalez-Delgado,
-    Carmelle Robert, Denis Foo Kune, Duilia de Mello, Daniel Devost, Timothy M. Heckman,
-    Alessandra Aloisi, Lucimara Martins, and Gerardo Vazquez.
-    A description of the input physics is in Leitherer et al. (1999; ApJS, 123, 3),
-    Vazquez & Leitherer (2005; ApJ, 621, 695) and Leitherer et al. (2010; ApJS, 189,309)
-    and Leitherer et al. (2014).
+    Constructs a grid of logarithmically rebinned SSP templates from the
+    BPASS (Binary Population and Spectral Synthesis) spectral library,
+    suitable for stellar population fitting with pPXF.
 
-    The code checks that the model spectra form a rectangular grid
-    in age and metallicity and properly sorts them in both parameters.
-    The code also returns the age and metallicity of each template
-    by reading these parameters directly from the file names.
-    The templates are broadened by a Gaussian with dispersion
-    ``sigma_diff = np.sqrt(sigma_gal**2 - sigma_tem**2)``.
+    Templates are read from FITS files with filenames encoding age and metallicity,
+    and are assumed to span a full Cartesian grid across those parameters.
 
-    This script is designed to use the files naming convention adopted by
-    the MILES library, where SSP spectra file names have the form like below::
+    Features:
+      - Reads and rebins BPASS spectra to a given velocity scale
+      - Optionally smooths templates to match galaxy resolution
+      - Normalizes templates within a specified wavelength range
+      - Extracts template age and metallicity from filenames
+      - Provides tools to visualize light-weighted template solutions
 
-        ...Z[Metallicity]T[Age]...fits
-        e.g. Eun1.30Zm0.40T00.0631_iPp0.00_baseFe_linear_FWHM_variable.fits
+    Parameters
+    ----------
+    pathname : str
+        Glob path to BPASS FITS template files
+        (e.g., "BPASS/instantaneous/single/imf135all_100/*Zp*T*.fits").
+    velscale : float
+        Desired velocity scale in km/s for logarithmic rebinning.
+    lib_path : str
+        Path to the wavelength array file (e.g., "BPASS/*lam.fits").
+    FWHM_gal : float or ndarray, optional
+        Galaxy instrumental resolution (in Angstroms). If provided,
+        templates will be convolved to match it.
+    FWHM_tem : float, default=1.0
+        Intrinsic resolution of the BPASS templates in Angstroms.
+    age_range : array_like, shape (2,), optional
+        Minimum and maximum ages (in Gyr) to include in the grid.
+    metal_range : array_like, shape (2,), optional
+        Minimum and maximum metallicities (in Z/Z☉) to include in the grid.
+    norm_range : array_like, shape (2,), optional
+        Wavelength range (in Angstroms) to use for flux normalization.
+    wave_range : array_like, shape (2,), optional
+        Wavelength range (in Angstroms) to trim the templates.
 
-    Input Parameters
-    ----------------
+    Attributes
+    ----------
+    templates : ndarray
+        Reprocessed templates as a 2D array (n_pix, n_templates).
+    ln_lam_temp : ndarray
+        Natural log of wavelength values (Angstroms).
+    lam_temp : ndarray
+        Linear wavelength array in Angstroms.
+    age_grid : ndarray
+        Age values in Gyr, reshaped to match the template grid.
+    metal_grid : ndarray
+        Metallicity values (Z) in the template grid.
+    flux : ndarray
+        Median flux in the normalization range for each template.
+    n_ages : int
+        Number of unique age bins in the template grid.
+    n_metal : int
+        Number of unique metallicity bins in the template grid.
 
-    pathname:
-        path with wildcards returning the list of files to use
-        (e.g. ``starburst_lib/stellar_templates/GENEVA_high_1.30_2.30.Zp0.001T0.00001_inst.fits``).
-        The files must form a Cartesian grid in age and metallicity and the procedure returns an error if
-        they do not.
-    velscale:
-        desired velocity scale for the output templates library in km/s
-        (e.g. 60). This is generally the same or an integer fraction of the
-        ``velscale`` of the galaxy spectrum used as input to ``ppxf``.
-    FWHM_gal:
-        scalar or vector with the FWHM of the instrumental resolution of the
-        galaxy spectrum in Angstrom at every pixel of the stellar templates.
-
-        - If ``FWHM_gal=None`` (default), no convolution is performed.
-
-    Optional Keywords
-    -----------------
-
-    age_range: array_like with shape (2,)
-        ``[age_min, age_max]`` optional age range (inclusive) in Gyr for the
-        STARBURST99 models. This can be useful e.g. to limit the age of the templates
-        to be younger than the age of the Universe at a given redshift.
-    metal_range: array_like with shape (2,)
-        ``[metal_min, metal_max]`` optional metallicity [M/H] range (inclusive)
-        for the STARBURST99 models (e.g.`` metal_range = [0.020, np.inf]`` to select only
-        the spectra with Solar metallicity and above).
-    norm_range: array_like with shape (2,)
-        A two-elements vector specifying the wavelength range in Angstrom
-        within which to compute the templates normalization
-        (e.g. ``norm_range=[5070, 5950]`` for the FWHM of the V-band).
-    wave_range: array_like with shape (2,)
-        A two-elements vector specifying the wavelength range in Angstrom for
-        which to extract the stellar templates. Restricting the wavelength
-        range of the templates to the range of the galaxy data is useful to
-        save some computational time. By default ``wave_range=[3541, 1e4]``
-
-    Output Parameters
-    -----------------
-
-    Stored as attributes of the ``starburst`` class:
-
-    .age_grid: array_like with shape (n_ages, n_metals)
-        Age in Gyr of every template.
-    .flux: array_like with shape (n_ages, n_metals)
-        ``.flux`` contains the mean flux in each template spectrum.
-
-        The weights returned by ``ppxf`` represent light contributed by each SSP population template.
-        One can then use this ``.flux`` attribute to convert the light weights
-        into fractional masses as follows::
-
-            pp = ppxf(...)                                  # Perform the ppxf fit
-            light_weights = pp.weights[~gas_component]      # Exclude gas templates weights
-            light_weights = light_weights.reshape(reg_dim)  # Reshape to a 2D matrix
-            mass_weights = light_weights/starburst.flux         # Divide by this attribute
-            mass_weights /= mass_weights.sum()              # Normalize to sum=1
-
-    .ln_lam_temp: array_like with shape (npixels,)
-        Natural logarithm of the wavelength in Angstrom of every pixel.
-    .metal_grid: array_like with shape (n_ages, n_metals)
-        Metallicity [M/H] of every template.
-    .n_ages:
-        Number of different ages.
-    .n_metal:
-        Number of different metallicities.
-    .templates: array_like with shape (npixels, n_ages, n_metals)
-        Array with the spectral templates.
-
+    References
+    ----------
+    - Eldridge, J.J., Stanway, E.R., Xiao, L., et al. (2017), "BPASS: Binary Population and Spectral Synthesis", PASA, 34, e058.
+    - Stanway, E.R., & Eldridge, J.J. (2018), "Reevaluating old stellar populations", MNRAS, 479, 75.
+    - BPASS project website: https://bpass.auckland.ac.nz
     """
 
     def __init__(self, pathname, velscale, lib_path, FWHM_gal=None, FWHM_tem=1.0,
@@ -179,9 +161,9 @@ class bpass:
         templates = np.empty((ssp_new.size, n_ages, n_metal))
         age_grid, metal_grid, flux = np.empty((3, n_ages, n_metal))
 
-        # Convolve the chosen STARBURST99 library of spectral templates
-        # with the quadratic difference between the galaxy and the
-        # Leitherer et al. (2010) resolution. Logarithmically rebin
+        # Convolve the chosen BPASS library of spectral templates
+        # with the quadratic difference between the galaxy and
+        # BPASS resolution (~1 Å). Logarithmically rebin
         # and store each template as a column in the array TEMPLATES.
 
         # Quadratic sigma difference in pixels Vazdekis --> galaxy
@@ -249,9 +231,38 @@ class bpass:
         self.flux = flux
 
 
-###############################################################################
+    def plot(self, weights, output_path=None, std_ages=None, std_metallicities=None,
+             a_v=0.0, std_A_v=None, plot=True):
+        """
+        Visualize light-fraction weights across the BPASS template grid.
 
-    def plot(self, weights, output_path=None, std_ages=None, std_metallicities=None, a_v=0.0, std_A_v=None, plot=True):
+        Creates a stacked bar plot of light fractions grouped by metallicity,
+        and optionally displays best-fit mean age, metallicity, and extinction.
+
+        Parameters
+        ----------
+        weights : ndarray, shape (n_ages, n_metallicities)
+            Light-fraction weights for each template in the grid.
+        output_path : str, optional
+            Directory path to save the plot as 'light_weights.png'.
+        std_ages : float, optional
+            Standard deviation of the mean age (in Myr).
+        std_metallicities : float, optional
+            Standard deviation of the mean metallicity (in Z/Z☉).
+        a_v : float, default=0.0
+            V-band extinction (A_V).
+        std_A_v : float, optional
+            Standard deviation of A_V.
+        plot : bool, default=True
+            If False, disables plotting but still returns weighted means.
+
+        Returns
+        -------
+        mean_age : float
+            Light-weighted mean stellar age (in Myr).
+        mean_z : float
+            Light-weighted mean stellar metallicity in solar units (Z/Z☉).
+        """
 
         assert weights.ndim == 2, "`weights` must be 2-dim"
         assert self.age_grid.shape == self.metal_grid.shape == weights.shape, \
@@ -262,7 +273,6 @@ class bpass:
         # Convert age grid to Myr
         xgrid = self.age_grid * 1e3
         ygrid = self.metal_grid
-        # print(xgrid, ygrid, weights)
 
         # Get unique ages and metallicities
         unique_ages = np.unique(xgrid)
