@@ -1,0 +1,60 @@
+INFO: Logging configured successfully
+INFO: Configuration Parameters:
+INFO: [Settings]
+INFO: galaxy_filename: pox186_g130M_g160M_spectrum.fits
+INFO: segment: 2
+INFO: bin_width: 6
+INFO: default_noise: 1.0
+INFO: z_guess: 0.0040705
+INFO: [instrument]
+INFO: fwhm_gal: 0.22
+INFO: r: None
+INFO: instr_lam_min: None
+INFO: instr_lam_max: None
+INFO: [dereddening]
+INFO: ebv: 0.0385
+INFO: model_name: CCM89
+INFO: rv: 3.1
+INFO: [library]
+INFO: lib_path: ../full_suite/
+INFO: library: STARBURST99
+INFO: evol_track: None
+INFO: imf: salpeter
+INFO: star_form: instantaneous
+INFO: star_pop: single
+INFO: age_range: [0.0, 0.01]
+INFO: metal_range: None
+INFO: norm_range: [1350, 1360]
+INFO: [fit]
+INFO: start: None
+INFO: absorp_lam: None
+INFO: bias: None
+INFO: bounds: [[0.0, 100.], [0.0, 40.]]
+INFO: clean: False
+INFO: constr_templ: None
+INFO: constr_kinem: None
+INFO: degree: -1
+INFO: dust: {"start": [0.0], "bounds": [0, 4]}
+INFO: fixed: None
+INFO: fraction: None
+INFO: ftol: 1e-4
+INFO: global_search: False
+INFO: linear: False
+INFO: linear_method: "lsq_box"
+INFO: mask: [[1185, 1230], [1268, 1283], [1296, 1303], [1547, 1552], [1598, 1623], [1659, 1667]]
+INFO: method: "capfit"
+INFO: mdegree: 0
+INFO: n_iterations: None
+INFO: quiet: False
+INFO: sigma_diff: 0.0
+INFO: trig: False
+INFO: vsyst: 0.0
+INFO: x0: None
+INFO: Velocity scale per pixel: 12.48628 km/s
+WARNING: the template's resolution dlam is larger than the galaxy's
+ Best Fit:       Vel     sigma
+ comp.  0:        17        40
+Attenuation Parameters 0: 0.624
+chi2/DOF: 0.01991; DOF: 9297; degree = -1; mdegree = 0
+method = capfit; Jac calls: 4; Func calls: 18; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 5/50

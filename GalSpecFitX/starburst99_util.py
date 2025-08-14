@@ -10,7 +10,6 @@
 #
 # Developed by Isabel Rivera, STScI, 16 June 2024
 ###############################################################################
-
 import os
 import glob, re
 
@@ -349,7 +348,8 @@ class starburst99:
             # Display mean age
             if std_ages is not None:
                 std_age_str = f"{std_ages:.2f}" if int(round(std_ages * 10)) % 10 == 1 else f"{std_ages:.1f}"
-                age_text = f"<Age> = {mean_age:.1f} \u00B1 {std_age_str}"
+                mean_age_str = f"{mean_age:.2f}" if int(round(std_ages * 10)) % 10 == 1 else f"{mean_age:.1f}"
+                age_text = f"<Age> = {mean_age_str} \u00B1 {std_age_str}"
             else:
                 age_text = f"<Age> = {mean_age:.1f}"
             ax.text(
@@ -360,7 +360,8 @@ class starburst99:
             # Display mean metallicity
             if std_metallicities is not None:
                 std_z_str = f"{std_metallicities:.2f}" if int(round(std_metallicities * 10)) % 10 == 1 else f"{std_metallicities:.1f}"
-                metallicity_text = f"<Z> = ({(mean_z / z_sol):.1f} \u00B1 {std_z_str}) * Zsol"
+                mean_z_str = f"{(mean_z / z_sol):.2f}" if int(round(std_metallicities * 10)) % 10 == 1 else f"{(mean_z / z_sol):.1f}"
+                metallicity_text = f"<Z> = ({mean_z_str} \u00B1 {std_z_str}) * Zsol"
             else:
                 metallicity_text = f"<Z> = {(mean_z / z_sol):.1f} * Zsol"
             ax.text(
@@ -371,7 +372,8 @@ class starburst99:
             # Display dust component
             if std_A_v is not None:
                 std_str = f"{std_A_v:.2f}" if int(round(std_A_v * 10)) % 10 == 1 else f"{std_A_v:.1f}"
-                dust_text = f"A_v = {a_v:.1f} \u00B1 {std_str}"
+                a_v_str = f"{a_v:.2f}" if int(round(std_A_v * 10)) % 10 == 1 else f"{a_v:.1f}"
+                dust_text = f"A_v = {a_v_str} \u00B1 {std_str}"
             else:
                 dust_text = f"A_v = {a_v:.1f}"
 

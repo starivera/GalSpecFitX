@@ -343,18 +343,10 @@ class TemplateRetrieval:
         lines = plt.gca().lines
         lines[0].set_linewidth(0.5)
         lines[0].set_linewidth(1.0)
+        ax.xaxis.label.set_size(14)
+        ax.yaxis.label.set_size(14)
+        ax.tick_params(axis='both', labelsize=12)
 
-        # # NV doublet (1238.82 and 1242.80 Å)
-        # plt.axvline(x=.123882, color='purple', linestyle='--')
-        # plt.axvline(x=.124280, color='purple', linestyle='--')
-        # plt.text(.123882 - 0.0002, 1.4, 'N V', color='purple', va='bottom', ha='right')
-        #
-        # # OV line (1371 Å)
-        # plt.axvline(x=.137130, color='orange', linestyle='--')
-        # plt.text(.137130 - 0.0002, 1.4, 'O V', color='orange', va='bottom', ha='right')
-        #
-        # plt.xlim(.1220, .1270)
-        # plt.ylim(0.0, 1.75)
         plt.savefig(os.path.join(output_path,'fitted_spectrum_static.png'), dpi=150)
 
         # Convert Matplotlib figure to Plotly
