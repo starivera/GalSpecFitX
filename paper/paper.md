@@ -75,22 +75,8 @@ The software supports fitting with multiple stellar population models. Figures 1
 
 GalSpecFitX can also generate light-weighted population diagnostics, which quantify the contributions of stellar populations of different ages and metallicities to the best-fit continuum. These results highlight the software’s ability to extract physically meaningful parameters from ultraviolet spectra in a fully reproducible workflow.
 
-<!-- Combined Figure 3: Light-weighted stellar populations -->
-<div style="display: flex; justify-content: space-between; align-items: flex-start;">
-
-  <div style="flex: 0 0 49%;">
-    <img src="figures/pox186_lightweights_starburst99.png" alt="Starburst99 light-weighted stellar populations" style="width: 100%;">
-    <p style="text-align: center;"><strong>Starburst99</strong></p>
-  </div>
-
-  <div style="flex: 0 0 49%;">
-    <img src="figures/pox186_lightweights_bpass.png" alt="BPASS light-weighted stellar populations" style="width: 100%;">
-    <p style="text-align: center;"><strong>BPASS</strong></p>
-  </div>
-
-</div>
-
-<p style="text-align: center;"><strong>Figure 3:</strong> Light-weighted stellar population contributions inferred from Starburst99 (left) and BPASS (right) fits to Pox 186. The x-axis shows stellar age, while colors represent metallicity. The vertical dashed line marks the average stellar age.</p>
+![Figure 3: Light-weighted stellar population contributions inferred from Starburst99 (left) and BPASS (right) fits to Pox 186. The x-axis shows stellar age, while colors represent metallicity. The vertical dashed line marks the average stellar age.](figures/pox186_lightweights_starburst99.png){width=45%}
+![.](figures/pox186_lightweights_bpass.png){width=45%}
 
 Parameter estimates from both models are in good agreement with published results [@Rogers2023]. For example, GalSpecFitX recovered average stellar ages of ~2–3 Myr, subsolar metallicities (Z ≈ 0.2–0.3 Z⊙), and attenuation values of AV ≈ 0.6–0.7 mag. Uncertainty estimates can be obtained via the optional Monte Carlo module, which perturbs the input spectrum and re-fits multiple realizations.
 
