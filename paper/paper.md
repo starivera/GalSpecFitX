@@ -86,13 +86,13 @@ Example filename conventions:
 - `Starburst99`:
 
 ```
-<evolutionary_track>_<star_formation>_<star_evolution>_<IMF_slope>.Zp<metallicity>T<age_in_Gyr>.fits
+<evol_track>_<star_formation>_<star_evolution>_<IMF>.Zp<metallicity>T<age_in_Gyr>.fits
 ```
 
 - `BPASS`:
 
 ```
-BPASS_2.2.1_<star_formation>_<star_evolution>_<IMF_slope>.Zp<metallicity>T<age_in_Gyr>.fits
+BPASS_2.2.1_<star_formation>_<star_evolution>_<IMF>.Zp<metallicity>T<age_in_Gyr>.fits
 ```
 
 A flexible, modular system retrieves the appropriate templates during fitting. Dedicated handler classes—`Starburst99LibraryHandler` and `BPASSLibraryHandler`—interface with their respective utilities and are integrated into the `SpectrumProcessor` within `galaxy_fit.py`. Users can filter templates by age, metallicity, and normalization range directly via the configuration file. Both the galaxy spectrum and templates are median-normalized before fitting.
