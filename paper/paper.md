@@ -36,7 +36,7 @@ bibliography: paper.bib
 ---
 
 # Summary
-`GalSpecFitX` is an open-source Python package for the full-spectrum fitting of galaxy spectra using the widely adopted Penalized Pixel-Fitting method (`pPXF`) (@Cappellari2004; @Cappellari2017). The software automates the common preprocessing steps required for reliable fitting—including Galactic extinction correction, redshift correction, binning, normalization, and masking—and provides straightforward access to stellar population synthesis models such as `Starburst99` [@Leitherer1999; @Leitherer2014] and `BPASS` [@Eldridge2017].
+`GalSpecFitX` is an open-source Python package for the full-spectrum fitting of galaxy spectra using the widely adopted Penalized Pixel-Fitting method (`pPXF`) [@Cappellari2004; @Cappellari2017]. The software automates the common preprocessing steps required for reliable fitting—including Galactic extinction correction, redshift correction, binning, normalization, and masking—and provides straightforward access to stellar population synthesis models such as `Starburst99` [@Leitherer1999; @Leitherer2014] and `BPASS` [@Eldridge2017].
 
 By combining a reproducible configuration system with modular design, `GalSpecFitX` lowers the barrier to entry for researchers new to spectral fitting, while providing flexibility for advanced users. The package enables astronomers to derive key physical properties of galaxies—such as stellar ages, metallicities, dust attenuation, and star formation histories—without requiring extensive expertise in data preparation or model handling.
 
