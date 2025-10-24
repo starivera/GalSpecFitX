@@ -31,7 +31,7 @@ affiliations:
     index: 3
   - name: Astrophysics Research Institute, Liverpool John Moores University, UK
     index: 4
-date: 2025-09-12
+date: 2025-10-24
 bibliography: paper.bib
 ---
 
@@ -127,7 +127,7 @@ To demonstrate `GalSpecFitX`, we fit the ultraviolet HST/COS G130M+G160M spectru
 
 - **Extinction correction:** Applied Milky Way curve from [@Cardelli1989] with E(B–V) = 0.0385 [@Schlafly2011].  
 - **Redshift correction:** Adopted z = 0.0040705 [@Kumari2024].  
-- **Normalization:** Scaled to the median flux between featureless spectral region 1350–1360 Å.  
+- **Normalization:** Scaled to the median flux in the featureless 1350–1360 Å spectral region.  
 - **Binning:** Applied 6-pixel binning for smoother continuum fits.  
 - **Masking:** Excluded spectral regions containing strong ISM/nebular features to prevent bias in the continuum fit.  
 
