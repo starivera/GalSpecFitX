@@ -102,7 +102,7 @@ A flexible, modular system retrieves the appropriate templates during fitting. D
 
 ## Output and Results
 
-`GalSpecFitX` produces a comprehensive set of outputs, including processed data, best-fit continua, diagnostic plots, and log files. Results are stored in a user-defined output directory, e.g.:
+`GalSpecFitX` produces a comprehensive set of outputs, including processed data, best-fit continua, diagnostic plots, and log files. Results are stored in a user-defined directory, e.g.:
 
 ```
 output/
