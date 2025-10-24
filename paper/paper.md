@@ -127,7 +127,7 @@ To demonstrate `GalSpecFitX`, we fit the ultraviolet HST/COS G130M+G160M spectru
 
 - **Extinction correction:** Applied Milky Way curve from [@Cardelli1989] with E(B–V) = 0.0385 [@Schlafly2011].  
 - **Redshift correction:** Adopted z = 0.0040705 [@Kumari2024].  
-- **Normalization:** Scaled to the median flux between feature-less spectral region 1350–1360 Å.  
+- **Normalization:** Scaled to the median flux between featureless spectral region 1350–1360 Å.  
 - **Binning:** Applied 6-pixel binning for smoother continuum fits.  
 - **Masking:** Excluded spectral regions containing strong ISM/nebular features to prevent bias in the continuum fit.  
 
