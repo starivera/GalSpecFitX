@@ -36,7 +36,7 @@ bibliography: paper.bib
 ---
 
 # Summary
-`GalSpecFitX` is an open-source Python package for the full-spectrum fitting of galaxy spectra using the widely adopted Penalized Pixel-Fitting method (`pPXF`; [@Cappellari2004; @Cappellari2017]). The software automates the common preprocessing steps required for reliable fitting—including Galactic extinction correction, redshift correction, binning, normalization, and masking—and provides straightforward access to stellar population synthesis models such as `Starburst99` [@Leitherer1999; @Leitherer2014] and `BPASS` [@Eldridge2017].
+`GalSpecFitX` is an open-source Python package for the full-spectrum fitting of galaxy spectra using the widely adopted Penalized Pixel-Fitting method [`pPXF`; @Cappellari2004; @Cappellari2017]. The software automates the common preprocessing steps required for reliable fitting—including Galactic extinction correction, redshift correction, binning, normalization, and masking—and provides straightforward access to stellar population synthesis models such as `Starburst99` [@Leitherer1999; @Leitherer2014] and `BPASS` [@Eldridge2017].
 
 By combining a reproducible configuration system with modular design, `GalSpecFitX` lowers the barrier to entry for researchers new to spectral fitting, while providing flexibility for advanced users. The package enables astronomers to derive key physical properties of galaxies—such as stellar ages, metallicities, dust attenuation, and star formation histories—without requiring extensive expertise in data preparation or model handling.
 
@@ -87,16 +87,16 @@ Example filename conventions:
 - `Starburst99`:
 
 ```
-<evol_track>_<star_form>_<star_pop>_<IMF_slope>_<M_max>.Zsol<metallicity>T<age>.fits
+<evol_track>_<star_form>_<star_pop>_<IMF_slope>_<M_max>.Zsol<metal>T<age>.fits
 ```
 
 - `BPASS`:
 
 ```
-BPASS_2.2.1_<star_form>_<star_pop>_<IMF_slope>_<M_max>.Zsol<metallicity>T<age>.fits
+BPASS_2.2.1_<star_form>_<star_pop>_<IMF_slope>_<M_max>.Zsol<metal>T<age>.fits
 ```
 
-where `evol_track` = evolutionary track, `star_form` = star formation law (instantaneous or continuous), `star_pop` = stellar population type (single or binary), `IMF_slope` = follows the source file conventions (e.g., [@Kroupa2001] IMF: `1.30_2.30` for `Starburst99`, `imf135_100` for `BPASS`), `M_max` = upper mass cutoff, `Zsol` = solar metallicity, and `age` = age in Gyr.
+where `evol_track` = evolutionary track, `star_form` = star formation law (instantaneous or continuous), `star_pop` = stellar population type (single or binary), `IMF_slope` = follows the source file conventions (e.g., for @Kroupa2001 IMF: `1.30_2.30` for `Starburst99`, `imf135_100` for `BPASS`), `M_max` = upper mass cutoff, `metal` = solar metallicity, and `age` = age in Gyr.
 
 A flexible, modular system retrieves the appropriate templates during fitting. Dedicated handler classes—`Starburst99LibraryHandler` and `BPASSLibraryHandler`—interface with their respective utilities and are integrated into the `SpectrumProcessor` within `galaxy_fit.py`. Users can filter templates by age, metallicity, and normalization range directly via the configuration file. Both the galaxy spectrum and templates are median-normalized before fitting.
 
