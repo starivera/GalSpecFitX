@@ -127,19 +127,19 @@ To demonstrate `GalSpecFitX`, we fit the ultraviolet HST/COS G130M+G160M spectru
 
 - **Extinction correction:** Applied Milky Way curve from [@Cardelli1989] with E(B–V) = 0.0385 [@Schlafly2011].  
 - **Redshift correction:** Adopted z = 0.0040705 [@Kumari2024].  
-- **Normalization:** Scaled to the median flux between 1350–1360 Å.  
+- **Normalization:** Scaled to the median flux between feature-less spectral region 1350–1360 Å.  
 - **Binning:** Applied 6-pixel binning for smoother continuum fits.  
 - **Masking:** Excluded spectral regions containing strong ISM/nebular features to prevent bias in the continuum fit.  
 
 All example scripts and configuration files used in this analysis are included in the repository under `pox186_demo/`.
 
-The software supports fitting with multiple stellar population models. Figures 2 and 3 show continuum fits to the Pox 186 spectrum using `Starburst99` and `BPASS` models, respectively. In both cases, `GalSpecFitX` recovered young, metal-poor stellar populations consistent with previous studies (e.g., [@Kumari2024; @Rogers2023]).
+The software supports fitting with multiple stellar population models. Figures 2 and 3 show continuum fits to the Pox 186 spectrum using `Starburst99` and `BPASS` models, respectively. In both cases, `GalSpecFitX` recovered young, metal-poor stellar populations consistent with previous studies [e.g., @Kumari2024; @Rogers2023].
 
 ![`GalSpecFitX` fit to the COS spectrum of Pox 186 using `Starburst99` models. The black line shows the dereddened, deredshifted spectrum; the red line shows the best-fit model. Masked regions are greyed out. Residuals (green dots) are shown below. The inset zooms into the P Cygni N V λ1240 line.](figures/pox186_starburst99.png)
 
 ![Same as above, but using `BPASS` models.](figures/pox186_bpass.png)
 
-`GalSpecFitX` can also generate light-weighted population diagnostics, which quantify the contributions of stellar populations of different ages and metallicities to the best-fit population synthesis models (Figure 4). 
+`GalSpecFitX` can also generate light-weighted population diagnostics, which quantify the contributions of stellar populations of different ages and metallicities to the best-fit population synthesis models (Figure 4).
 
 ![Light-weighted stellar population contributions inferred from `Starburst99` (left) and `BPASS` (right) fits to Pox 186. The x-axis shows stellar age, while colors represent metallicity. The vertical dashed line marks the average stellar age.](figures/pox186_lightweights_combined.png)
 
