@@ -5,6 +5,7 @@ This script runs the spectral fitting algorithm pPXF.
 Author: Isabel Rivera
 """
 import os
+import glob
 import logging
 from pathlib import Path
 from abc import ABC, abstractmethod
@@ -17,9 +18,10 @@ from astropy.table import Table
 import plotly.tools as tls
 import plotly.io as pio
 import plotly.graph_objects as go
+from multiprocessing import Pool
 
 from ppxf.ppxf import ppxf
-import ppxf.ppxf_util as util
+import GalSpecFitX.sps_util as lib
 
 # Constants
 SPEED_OF_LIGHT = 299792.458  # Speed of light in km/s
@@ -148,6 +150,13 @@ class Starburst99LibraryHandler(LibraryHandler):
     """
     Handler for Starburst99 stellar population models. This handler is used to retrieve
     templates from the Starburst99 library based on the specified parameters.
+
+    References
+    ----------
+    Leitherer et al. (1999), ApJS, 123, 3
+    Vázquez & Leitherer (2005), ApJ, 621, 695
+    Leitherer et al. (2010), ApJS, 189, 309
+    Leitherer et al. (2014)
     """
 
     def __init__(self, IMF_slope: str, star_form: str, star_pop: str, lib_path: str, evol_track: str):
@@ -160,8 +169,6 @@ class Starburst99LibraryHandler(LibraryHandler):
         :param lib_path: Path to the base directory of the Starburst99 library.
         :param evol_track: Evolutionary track to be used for the Starburst99 models.
         """
-        import GalSpecFitX.starburst99_util as lib  # Import the library only if using this handler
-        self.lib = lib
         self.IMF_slope = IMF_slope
         self.star_form = star_form
         self.star_pop = star_pop
@@ -182,7 +189,9 @@ class Starburst99LibraryHandler(LibraryHandler):
         :return: The retrieved Starburst99 templates.
         """
         pathname = os.path.join(self.lib_path, 'STARBURST99', self.evol_track, self.star_form, self.star_pop, self.IMF_slope, '*.fits')
-        starburst99_lib = self.lib.starburst99(pathname, velscale, self.lib_path, self.evol_track, age_range=age_range, metal_range=metal_range, norm_range=norm_range, FWHM_gal=FWHM_gal)
+        lam = glob.glob(os.path.join(self.lib_path, "STARBURST99", self.evol_track, "*lam.fits"))[0]
+
+        starburst99_lib = lib.SPSLibrary(pathname, lam, velscale, FWHM_gal=FWHM_gal, FWHM_tem=0.4, age_range=age_range, metal_range=metal_range, norm_range=norm_range)
 
         return starburst99_lib
 
@@ -190,6 +199,12 @@ class BPASSLibraryHandler(LibraryHandler):
     """
     Handler for BPASS (Binary Population and Spectral Synthesis) stellar population models.
     This handler retrieves templates from the BPASS library based on the specified parameters.
+
+    References
+    ----------
+    - Eldridge, J.J., Stanway, E.R., Xiao, L., et al. (2017), "BPASS: Binary Population and Spectral Synthesis", PASA, 34, e058.
+    - Stanway, E.R., & Eldridge, J.J. (2018), "Reevaluating old stellar populations", MNRAS, 479, 75.
+    - BPASS project website: https://bpass.auckland.ac.nz
     """
 
     def __init__(self, IMF_slope: str, star_form: str, star_pop: str, lib_path: str):
@@ -201,7 +216,6 @@ class BPASSLibraryHandler(LibraryHandler):
         :param star_pop: Star population scenario (e.g., single, binary).
         :param lib_path: Path to the base directory of the BPASS library.
         """
-        import GalSpecFitX.bpass_util as lib  # Import only if using this handler
         self.lib = lib
         self.IMF_slope = IMF_slope
         self.star_form = star_form
@@ -221,7 +235,9 @@ class BPASSLibraryHandler(LibraryHandler):
         :return: The retrieved BPASS templates.
         """
         pathname = os.path.join(self.lib_path, 'BPASS', self.star_form, self.star_pop, self.IMF_slope, '*.fits')
-        bpass_lib = self.lib.bpass(pathname, velscale, self.lib_path, age_range=age_range, metal_range=metal_range, norm_range=norm_range, FWHM_gal=FWHM_gal)
+        lam = glob.glob(os.path.join(self.lib_path, "BPASS", "*lam.fits"))[0]
+
+        bpass_lib = lib.SPSLibrary(pathname, lam, velscale, FWHM_gal=FWHM_gal, FWHM_tem=1.0, age_range=age_range, metal_range=metal_range, norm_range=norm_range)
 
         return bpass_lib
 
@@ -271,7 +287,7 @@ class TemplateRetrieval:
 
 
     def fit_spectrum(self, library: object, templates: np.ndarray, velscale: float, start: List[List[float]], dust: dict, moments: List[int], lam_temp: np.ndarray,
-                     reg_dim: Tuple[int, ...], output_path: str, n_iterations: int,
+                     reg_dim: Tuple[int, ...], output_path: str, n_iterations: int, config_filename: str,
                      **kwargs) -> None:
         """
         Fit the combined spectrum using pPXF.
@@ -315,7 +331,7 @@ class TemplateRetrieval:
 
             kwargs['mask'] = mask_lam
 
-
+        logging.info(f'Beginning galaxy spectral fitting')
         pp = ppxf(templates, gal_flux, gal_err, velscale, start, dust=dust, moments=moments, lam=gal_lam, lam_temp=lam_temp,
                   reg_dim=reg_dim,
                   **kwargs)
@@ -325,15 +341,14 @@ class TemplateRetrieval:
         else:
             a_v = 0.0
 
-
         # Assuming pp.bestfit is a 1D array-like object
         bestfit_table = Table([pp.bestfit], names=('flux',))
 
         # Convert the table to a FITS Binary Table HDU
-        bestfit_hdu = fits.BinTableHDU(bestfit_table, name='BESTFIT')
+        bestfit_hdu = fits.BinTableHDU(bestfit_table, name=f'BESTFIT')
 
         # Open bestfit.fits which should already exist in the output path and append the new table
-        with fits.open(os.path.join(output_path,'bestfit.fits'), mode='append') as hdul:
+        with fits.open(os.path.join(output_path,f'bestfit_{config_filename}.fits'), mode='append') as hdul:
             hdul.append(bestfit_hdu)
 
         # Create the Matplotlib figure
@@ -347,13 +362,13 @@ class TemplateRetrieval:
         ax.yaxis.label.set_size(14)
         ax.tick_params(axis='both', labelsize=12)
 
-        plt.savefig(os.path.join(output_path,'fitted_spectrum_static.png'), dpi=150)
+        plt.savefig(os.path.join(output_path,f'bestfit_{config_filename}_static.png'), dpi=600)
 
         # Convert Matplotlib figure to Plotly
         plotly_fig = tls.mpl_to_plotly(fig)
 
         # Save the interactive plot as an HTML file
-        pio.write_html(plotly_fig, file=os.path.join(output_path,'interactive_fitted_spectrum.html'), auto_open=False)
+        pio.write_html(plotly_fig, file=os.path.join(output_path,f'bestfit_{config_filename}_interactive.html'), auto_open=False)
 
         # Create light weights plot
         light_weights = pp.weights
@@ -367,35 +382,61 @@ class TemplateRetrieval:
                 n_iterations, library, templates, gal_flux, gal_err, velscale, start, dust, moments, gal_lam, lam_temp, reg_dim, **kwargs
             )
 
-        library.plot(light_weights, output_path, std_ages, std_metallicities, a_v, std_A_v)
+        library.plot(light_weights, config_filename, output_path, std_ages, std_metallicities, a_v, std_A_v)
 
-    def _compute_uncertainties(self, n_iterations: int, library, templates, gal_flux, gal_err, velscale, start, dust, moments, gal_lam, lam_temp, reg_dim, **kwargs):
+    @staticmethod
+    def _single_iteration(i, templates, gal_flux, gal_err, velscale, start, dust,
+                          moments, gal_lam, lam_temp, reg_dim, library, kwargs):
+        """Run one Monte Carlo iteration."""
+        simulated_flux = gal_flux + np.random.normal(0, gal_err)
+        try:
+            pp_sim = ppxf(
+                templates, simulated_flux, gal_err, velscale, start,
+                dust=dust, moments=moments, lam=gal_lam, lam_temp=lam_temp,
+                reg_dim=reg_dim, **kwargs
+            )
+
+            light_weights_sim = pp_sim.weights.reshape(reg_dim)
+            light_weights_sim /= light_weights_sim.sum()
+
+            mean_age, mean_z = library.plot(light_weights_sim, plot=False)
+            A_v = pp_sim.dust[0]['sol'][0] if pp_sim.dust is not None else 0.0
+            return mean_age, mean_z, A_v
+
+        except (ValueError, AssertionError):
+            # Return None or NaN for failed iterations
+            return None
+
+    def _compute_uncertainties(self, n_iterations: int, library, templates, gal_flux, gal_err,
+                               velscale, start, dust, moments, gal_lam, lam_temp, reg_dim,
+                               **kwargs):
         """
-        Compute uncertainties via Monte Carlo iterations.
+        Compute uncertainties via Monte Carlo iterations using multiprocessing.
         """
-        ages, metallicities, A_v = [], [], []
 
-        for i in range(n_iterations):
-            simulated_flux = gal_flux + np.random.normal(0, gal_err)
+        n_processes = max(1, os.cpu_count() - 1)
 
-            try:
-                pp_sim = ppxf(templates, simulated_flux, gal_err, velscale, start, dust=dust, moments=moments,
-                              lam=gal_lam, lam_temp=lam_temp, reg_dim=reg_dim, **kwargs)
+        args = [
+            (i, templates, gal_flux, gal_err, velscale, start, dust, moments,
+             gal_lam, lam_temp, reg_dim, library, kwargs)
+            for i in range(n_iterations)
+        ]
 
-                light_weights_sim = pp_sim.weights.reshape(reg_dim)
-                light_weights_sim /= light_weights_sim.sum()
+        with Pool(processes=n_processes) as pool:
+            results = pool.starmap(self._single_iteration, args)
 
-                mean_age, mean_z = library.plot(light_weights_sim, plot=False)
-                ages.append(mean_age)
-                metallicities.append(mean_z)
+        # Filter out failed runs
+        results = [r for r in results if r is not None]
 
-                if pp_sim.dust is not None:
-                    A_v.append(pp_sim.dust[0]['sol'][0])
+        if results:
+            ages, metallicities, A_vs = zip(*results)
+            std_ages = np.std(ages)
+            std_metallicities = np.std(metallicities)
+            std_A_v = np.std(A_vs)
+        else:
+            std_ages = std_metallicities = std_A_v = None
 
-            except ValueError:
-                continue
-
-        return np.std(ages), np.std(metallicities), np.std(A_v) if A_v else None
+        return std_ages, std_metallicities, std_A_v
 
 
 class SpectrumProcessor:
@@ -424,7 +465,7 @@ class SpectrumProcessor:
         :param R: Instrumental resolution as a float.
         :return: List of wavelength range tuples `(float, float)` masked during processing.
         """
-        logging.info(f'Beginning spectral line fitting')
+        logging.info(f'Beginning milky way line fitting')
 
         # Extract spectrum data
         lam_gal, flux_gal, err_gal = self.gal_spectrum
@@ -487,7 +528,7 @@ class SpectrumProcessor:
 
         self.config['mask'] = updated_mask
         logging.info(f'Updated mask: {updated_mask}')
-        logging.info(f'Ending spectral line fitting')
+        logging.info(f'Ending milky way line fitting')
 
         return updated_mask
 
@@ -529,7 +570,7 @@ class SpectrumProcessor:
         # Step 3: Fit the spectrum using pPXF
         fit_kwargs = {
             key: value for key, value in self.config.items()
-            if key not in ['age_range', 'metal_range', 'norm_range', 'FWHM_gal', 'output_path', 'absorp_lam', 'segment', 'default_noise', 'n_iterations', 'start', 'dust',
+            if key not in ['age_range', 'metal_range', 'norm_range', 'FWHM_gal', 'output_path', 'absorp_lam', 'config_filename', 'default_noise', 'n_iterations', 'start', 'dust',
             ]
         }
 
@@ -542,8 +583,9 @@ class SpectrumProcessor:
             moments,
             lam_temp,
             reg_dim,
-            output_path = self.config['output_path'],
+            output_path  = self.config['output_path'],
             n_iterations = self.config['n_iterations'],
+            config_filename      = self.config['config_filename'],
 
             **fit_kwargs
         )

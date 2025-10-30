@@ -36,7 +36,7 @@ bibliography: paper.bib
 ---
 
 # Summary
-`GalSpecFitX` is an open-source Python package for the full-spectrum fitting of galaxy spectra using the widely adopted Penalized Pixel-Fitting method (`pPXF`) [@Cappellari2004; @Cappellari2017]. The software automates the common preprocessing steps required for reliable fitting—including Galactic extinction correction, redshift correction, binning, normalization, and masking—and provides straightforward access to stellar population synthesis models such as `Starburst99` [@Leitherer1999; @Leitherer2014] and `BPASS` [@Eldridge2017].
+`GalSpecFitX` is an open-source Python package for the full-spectrum fitting of galaxy spectra using the widely adopted Penalized Pixel-Fitting method (`pPXF`) [@Cappellari2004; @Cappellari2017]. The software automates the common preprocessing steps required for reliable fitting—including galactic extinction correction, redshift correction, binning, and normalization—and provides straightforward access to stellar population synthesis models such as `Starburst99` [@Leitherer1999; @Leitherer2014] and `BPASS` [@Eldridge2017].
 
 By combining a reproducible configuration system with modular design, `GalSpecFitX` lowers the barrier to entry for researchers new to spectral fitting, while providing flexibility for advanced users. The package enables astronomers to derive key physical properties of galaxies—such as stellar ages, metallicities, dust attenuation, and star formation histories—without requiring extensive expertise in data preparation or model handling.
 
@@ -49,7 +49,7 @@ Existing tools address related needs. Packages such as `STARLIGHT` [@Cid-Fernand
 
 `GalSpecFitX` bridges this gap by providing:
 
-- Automated preprocessing routines (extinction correction, redshift correction, binning, normalization, masking).
+- Automated preprocessing routines (extinction correction, redshift correction, binning, and normalization).
 
 - Built-in support for widely used stellar population synthesis models (`Starburst99` and `BPASS`).
 
@@ -57,22 +57,20 @@ Existing tools address related needs. Packages such as `STARLIGHT` [@Cid-Fernand
 
 - A modular design that allows users to extend or swap individual components.
 
-This combination makes `GalSpecFitX` especially useful for researchers who want to leverage `pPXF’s` capabilities without needing to implement the surrounding infrastructure from scratch.
+This combination makes `GalSpecFitX` especially useful for researchers who want to leverage `pPXF`’s capabilities without needing to implement the surrounding infrastructure from scratch.
 
 # Software Overview
 
-`GalSpecFitX` is organized into three primary scripts and two supporting utilities for handling stellar population synthesis (SPS) libraries:
+`GalSpecFitX` is organized into three primary scripts and one general utility function for handling stellar population synthesis (SPS) libraries:
 
 - `main.py` — Central driver script that reads the configuration file, loads the input galaxy data, and orchestrates the preprocessing and fitting steps.
 
-- `galaxy_preprocess.py` — Handles all preprocessing operations (e.g., dereddening, deredshifting, binning, normalization, and masking).
+- `galaxy_preprocess.py` — Handles all preprocessing operations (e.g., galactic dereddening, deredshifting, binning, and normalization).
 
 - `galaxy_fit.py` — Retrieves the appropriate SPS templates and executes the pPXF algorithm using user-defined parameters.
 
-- Utility scripts:
-  - `starburst99_util.py` — Interfaces with the `Starburst99` library.
-
-  - `bpass_util.py` — Interfaces with the `BPASS` library.
+- Utility script:
+  - `sps_util.py` — Interfaces with the chosen SPS library (i.e. Starburst99 or BPASS).
 
 Figure 1 outlines the key responsibilities of each script, along with associated configuration options.
 
@@ -80,7 +78,7 @@ Figure 1 outlines the key responsibilities of each script, along with associated
 
 ## Template Retrieval
 
-`GalSpecFitX` includes access to sample spectral templates for both `Starburst99` and `BPASS`, with full libraries obtainable via Git Large File Storage (LFS). Templates are converted to FITS format with filenames encoding the IMF, metallicity, and age of each model (see the README for details).
+`GalSpecFitX` includes access to sample spectral templates for both `Starburst99` and `BPASS`, with full libraries obtainable via Git Large File Storage (LFS). Templates are converted to FITS format with filenames encoding the Initial Mass Function (IMF), metallicity, and age of each model (see the README for details).
 
 Example filename conventions:
 
@@ -96,9 +94,9 @@ Example filename conventions:
 BPASS_2.2.1_<star_form>_<star_pop>_<IMF_slope>_<M_max>.Zsol<metal>T<age>.fits
 ```
 
-where `evol_track` = evolutionary track, `star_form` = star formation law (instantaneous or continuous), `star_pop` = stellar population type (single or binary), `IMF_slope` = follows the source file conventions (e.g., for @Kroupa2001 IMF: `1.30_2.30` for `Starburst99`, `imf135_100` for `BPASS`), `M_max` = upper mass cutoff, `metal` = solar metallicity, and `age` = age in Gyr.
+where `evol_track` = evolutionary track, `star_form` = star formation law (instantaneous or continuous), `star_pop` = stellar population type (single or binary), `IMF_slope` = follows the source file conventions (e.g., for @Kroupa2001 IMF: `1.30_2.30` for `Starburst99`, `imf135` for `BPASS`), `M_max` = upper mass cutoff, `metal` = solar metallicity, and `age` = age in Gyr.
 
-A flexible, modular system retrieves the appropriate templates during fitting. Dedicated handler classes—`Starburst99LibraryHandler` and `BPASSLibraryHandler`—interface with their respective utilities and are integrated into the `SpectrumProcessor` within `galaxy_fit.py`. Users can filter templates by age, metallicity, and normalization range directly via the configuration file. Both the galaxy spectrum and templates are median-normalized before fitting.
+A flexible, modular system retrieves the appropriate templates during fitting. Dedicated handler classes—`Starburst99LibraryHandler` and `BPASSLibraryHandler`—interface with the SPS utility module `sps_util` to retrieve the templates based on user parameters, which are integrated into the `SpectrumProcessor` class within `galaxy_fit.py`. Users can filter templates by age, metallicity, and normalization range directly via the configuration file. Both the galaxy spectrum and templates are median-normalized before fitting.
 
 ## Output and Results
 
@@ -106,19 +104,19 @@ A flexible, modular system retrieves the appropriate templates during fitting. D
 
 ```
 output/
-├── bestfit.fits
-├── fitted_spectrum_static.png
-├── interactive_fitted_spectrum.html
-├── light_weights.png
-├── normalized_log_rebinned_spectrum_<hdu_ext>.html
-└── spectral_fitting.log
+├── bestfit_<config_filename>.fits
+├── bestfit_<config_filename>_static.png
+├── bestfit_<config_filename>_interactive.html
+├── light_weights_<config_filename>.png
+├── <config_filename>_preprocessed.html
+└── spectral_fitting_<config_filename>.log
 ```
 
 Key outputs include:
 
-- `bestfit.fits` — Contains preprocessed data and the best-fit continuum.
+- `bestfit_<config_filename>.fits` — Contains preprocessed data and the best-fit continuum.
 
-- `spectral_fitting.log` — Summarizes configuration settings and derived parameters (e.g., velocity dispersion, attenuation, fit quality).
+- `spectral_fitting_<config_filename>.log` — Summarizes configuration settings and derived parameters (e.g., velocity dispersion, attenuation, fit quality).
 
 - Static and interactive visualizations — `Plotly`-based figures allow for zooming, panning, and exporting, while static PNGs summarize final fits and light-weighted stellar population contributions.
 
