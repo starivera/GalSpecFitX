@@ -26,11 +26,11 @@ def age_metal(filename):
     Extract age and metallicity from a BPASS template filename.
 
     Assumes the filename includes a substring of the form:
-    'Zp[M].T[A]', where M is the metallicity (Z) and A is the age (T),
-    both in float format (Gyr for age).
+    'Zsol[M].T[A]', where M is the solar metallicity (Zsol) and A is the age in Gyr (T),
+    both in float format.
 
     Example:
-        '...Zp0.001T0.00001_inst.fits'
+        '...Zsol0.001T0.00001_inst.fits'
 
     Parameters
     ----------
@@ -45,14 +45,14 @@ def age_metal(filename):
         Metallicity in fractional solar units (e.g., 0.020 = Solar).
     """
 
-    match = re.search(r'Zp([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)T([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)', filename)
+    match = re.search(r'Zsol([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)T([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)', filename)
 
     if match:
         metal = float(match.group(1))
         age = float(match.group(2))
         return age, metal
     else:
-        raise ValueError(f"Filename {filename} does not contain 'Zp...T...' pattern.")
+        raise ValueError(f"Filename {filename} does not contain 'Zsol...T...' pattern.")
 
 ###############################################################################
 
@@ -76,7 +76,7 @@ class bpass:
     ----------
     pathname : str
         Glob path to BPASS FITS template files
-        (e.g., "BPASS/instantaneous/single/imf135all_100/*Zp*T*.fits").
+        (e.g., "BPASS/instantaneous/single/imf135all_100/*Zsol*T*.fits").
     velscale : float
         Desired velocity scale in km/s for logarithmic rebinning.
     lib_path : str
@@ -231,7 +231,7 @@ class bpass:
         self.flux = flux
 
 
-    def plot(self, weights, output_path=None, std_ages=None, std_metallicities=None,
+    def plot(self, weights, config_filename='config', output_path=None, std_ages=None, std_metallicities=None,
              a_v=0.0, std_A_v=None, plot=True):
         """
         Visualize light-fraction weights across the BPASS template grid.
@@ -244,7 +244,7 @@ class bpass:
         weights : ndarray, shape (n_ages, n_metallicities)
             Light-fraction weights for each template in the grid.
         output_path : str, optional
-            Directory path to save the plot as 'light_weights.png'.
+            Directory path to save the plot as 'light_weights_<config_filename>.png'.
         std_ages : float, optional
             Standard deviation of the mean age (in Myr).
         std_metallicities : float, optional
@@ -311,7 +311,7 @@ class bpass:
                     width=(np.max(unique_ages) - np.min(unique_ages)) / len(unique_ages) * 0.8,
                     color=colors[i],
                     bottom=bottoms,
-                    label=f"{unique_metals[i]/z_sol:.2f} * Zsol"
+                    label=f"{unique_metals[i]/z_sol:.2f} * Z☉"
                 )
                 bottoms += weight_for_metal
 
@@ -334,9 +334,9 @@ class bpass:
             if std_metallicities is not None:
                 std_z_str = f"{std_metallicities:.2f}" if int(round(std_metallicities * 10)) % 10 == 1 else f"{std_metallicities:.1f}"
                 mean_z_str = f"{(mean_z / z_sol):.2f}" if int(round(std_metallicities * 10)) % 10 == 1 else f"{(mean_z / z_sol):.1f}"
-                metallicity_text = f"<Z> = ({mean_z_str} \u00B1 {std_z_str}) * Zsol"
+                metallicity_text = f"<Z> = ({mean_z_str} \u00B1 {std_z_str}) * Z☉"
             else:
-                metallicity_text = f"<Z> = {(mean_z / z_sol):.1f} * Zsol"
+                metallicity_text = f"<Z> = {(mean_z / z_sol):.1f} * Z☉"
             ax.text(
                 mean_age+1, 0.5, metallicity_text,
                 verticalalignment='center', horizontalalignment='left', fontsize=10
@@ -358,7 +358,7 @@ class bpass:
 
             # Set title, axis labels and legend
             plt.title("Light Weights Fractions");
-            ax.set_xlabel('Stellar population Age (Myr)')
+            ax.set_xlabel('Stellar population age (Myr)')
             ax.set_ylabel('Light fraction')
             ax.set_xlim(np.min(unique_ages) - 1, np.max(unique_ages) + 1)
             ax.set_ylim(0, 1)
@@ -367,6 +367,6 @@ class bpass:
 
 
             if output_path != None:
-                plt.savefig(os.path.join(output_path,'light_weights.png'), dpi=150)
+                plt.savefig(os.path.join(output_path,f'light_weights_{config_filename}.png'), dpi=600)
 
         return mean_age, mean_z / z_sol

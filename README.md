@@ -1,7 +1,7 @@
 # GalSpecFitX
 Full Spectrum Galaxy Fitting Software Utilizing [STARBURST99](https://www.stsci.edu/science/starburst99/docs/default.htm) and [BPASS](https://bpass.auckland.ac.nz/) stellar population models.
 
-This software applies the Penalized PiXel-Fitting method (pPXF) created and distributed by [Cappellari (2023)](https://ui.adsabs.harvard.edu/abs/2023MNRAS.526.3273C), which extracts the stellar or gas kinematics and stellar population from galaxy spectra via full spectrum fitting using a maximum penalized likelihood approach. The GalSpecFitX software provides several routines for preparing galaxy data to ensure the highest efficiency with the fitting routine. It also provides additional enhancements such as Milky Way absorption line masking. A full suite of STARBURST99 and BPASS libraries have been included for compatible use with the software.
+This software applies the Penalized Pixel-Fitting method (pPXF) developed by [Cappellari (2023)](https://ui.adsabs.harvard.edu/abs/2023MNRAS.526.3273C), which derives stellar population properties from galaxy spectra through full-spectrum fitting using a maximum penalized likelihood approach. GalSpecFitX performs a suite of preprocessing routines—such as Galactic dereddening, deredshifting, binning, and normalization—to ensure optimal performance with the fitting algorithm, and introduces additional features including spectral line masking and seamless integration with established stellar population synthesis libraries. Comprehensive Starburst99 and BPASS model suites are included for immediate use.
 
 ## HOW TO RUN
 1. Clone the GalSpecFitX repository.
@@ -21,9 +21,9 @@ This software applies the Penalized PiXel-Fitting method (pPXF) created and dist
    ```
 
 ## DATA PREPARATION
-This software prepares a raw galaxy spectrum for spectral fitting by performing de-reddening, de-redshifting, binning, log re-binning and median normalization routines. This ensures the best compatibility with the fitting algorithm. GalSpecFitX requires a FITS file containing an Astropy table with ‘wavelength,’ ‘flux,’ and ‘error,’ columns. The spectrum must be evenly sampled; otherwise, continuum fitting may become misaligned. 
+This software prepares a raw galaxy spectrum for spectral fitting by performing dereddening, deredshifting, binning, log-rebinning (required to run pPXF) and median normalization routines. This ensures the best compatibility with the fitting algorithm. GalSpecFitX requires a FITS file containing an Astropy table with ‘wavelength,’ ‘flux,’ and ‘error,’ columns. The galaxy spectrum must be evenly sampled; otherwise, the continuum fit may misalign with the observed spectrum.
 
-Please see the example below for instructions on how to use Python to merge multiple spectra and the spectres package to achieve even sampling. The final data are stored in an Astropy table within a single HDU extension of a FITS file. 
+Please see the example below for instructions on how to use Python to merge multiple spectra and the spectres package to achieve even sampling. The final data are stored in an Astropy table within a single HDU extension of a FITS file.
 
 ```
 from astropy.table import Table
@@ -39,9 +39,9 @@ def create_sample_spectrum(lam_min, lam_max):
     return wavelength, flux, noise  
 
 # Creating multiple spectra
-spectrum1 = create_sample_spectrum(4000, 5000) 
-spectrum2 = create_sample_spectrum(5000, 6000)
-spectrum3 = create_sample_spectrum(6000, 7000)
+spectrum1 = create_sample_spectrum(1000, 2000)
+spectrum2 = create_sample_spectrum(2100, 3200)
+spectrum3 = create_sample_spectrum(3500, 4000)
 
 # Combine multiple spectra
 combined_lam = np.concatenate([spectrum1[0], spectrum2[0], spectrum3[0]])
@@ -49,7 +49,7 @@ combined_flux = np.concatenate([spectrum1[1], spectrum2[1], spectrum3[1]])
 combined_noise = np.concatenate([spectrum1[2], spectrum2[2], spectrum3[2]])
 
 # Create evenly sampled wavelength array
-combined_lam_resamp = np.arange(combined_lam[0], combined_lam[-1], combined_lam[1] - combined_lam[0]) 
+combined_lam_resamp = np.arange(combined_lam[0], combined_lam[-1], combined_lam[1] - combined_lam[0])
 
 # Use spectres to resample the combined spectrum
 combined_flux_resamp, combined_noise_resamp = spectres(combined_lam_resamp, combined_lam, combined_flux, combined_noise, fill=0)
@@ -59,7 +59,7 @@ spectrum_resamp = [combined_lam_resamp, combined_flux_resamp, combined_noise_res
 # Create Astropy Table
 table = Table(spectrum_resamp, names=('wavelength', 'flux', 'error'))
 
-# Convert the table to a FITS HDU 
+# Convert the table to a FITS HDU
 hdu = fits.BinTableHDU(table, name='FULL_SPECTRUM')
 
 # Create a Primary HDU
@@ -82,7 +82,7 @@ This section contains general settings related to the galaxy data processing.
 | Parameter         | Type   | Description                                                                 |
 |-------------------|--------|-----------------------------------------------------------------------------|
 | `galaxy_filename` | string | Name of the galaxy spectrum FITS file.                                           |
-| `segment`         | string | FITS HDU extension number corresponding to the data you want to process.    |
+| `segment`         | string | FITS HDU extension name corresponding to the data you want to process (e.g 'FULL_SPECTRUM').    |
 | `bin_width`       | int    | Width for binning the galaxy spectrum. 1 performs no binning.     |
 | `default_noise`   | float  | Default noise value for the galaxy spectrum. Default is 1.                  |
 | `z_guess`         | float  | Initial guess for the redshift of the galaxy. 0 performs no redshifting.                               |
@@ -94,12 +94,12 @@ This section contains information about the instrument used for the observations
 |-------------------|--------|-----------------------------------------------------------------------------|
 | `FWHM_gal`        | float  | Spectral resolution full width at half maximum (FWHM) in Angstroms.         |
 | *or the following three parameters if `FWHM_gal` is not provided:*                                       |
-| `instr_lam_min`   | float  | Minimum wavelength of the instrument in microns.                            |
-| `instr_lam_max`   | float  | Maximum wavelength of the instrument in microns.                            |
-| `R`               | float  | Resolving power of the instrument.                                          |
+| `instr_lam_min`   | float  | Minimum wavelength of the instrument in Angstroms.                            |
+| `instr_lam_max`   | float  | Maximum wavelength of the instrument in Angstroms.                            |
+| `R`               | float  | Resolving power of the instrument.                                           |
 
 ### 3. Dereddening Section
-This section contains parameters for removing Milky Way foreground from a galaxy spectrum.
+This section contains parameters for removing Milky Way foreground from a galaxy spectrum. Dereddening is performed using Python's [dust_extinction](https://dust-extinction.readthedocs.io/en/latest/) package.
 
 | Parameter   | Type   | Description                                                                       |
 |-------------|--------|-----------------------------------------------------------------------------------|
@@ -161,7 +161,7 @@ This section contains additional parameters for customizing the fitting process.
 
 ## Optional: Milky Way Absorption Line Masking
 
-GalSpecFitX allows the user to mask parts of a spectrum containing milky way absorption lines and exclude them from the fit. This is NOT line subtraction. Masking is done by fitting a single gaussian to a line at a given wavelength and approximate width. The pixels within this range will simply not be included during the fit. 
+GalSpecFitX allows the user to mask parts of a spectrum containing milky way absorption lines and exclude them from the fit. This is NOT line subtraction. Masking is done by fitting a single gaussian to a line at a given wavelength and approximate width. The pixels within this range will simply not be included during the fit.
 You can provide this as either:
 - A list of wavelengths: default masking window of 5×(wavelength / R) will be used for each line. Example: absorp_lam = [5175.0, 5890.0, 3933.7]
 - A dictionary mapping each wavelength to a custom window (in Å). Example: absorp_lam = {"5175.0": 10.0, "5890.0": 15.0}
@@ -172,11 +172,12 @@ If not provided or set to None, no absorption line masking will be applied.
 These are the parameters I recommend focusing on as they tend to have the greatest influence on the quality of the fit:
 
 - **start**: Initial guess for the LOSVD parameters (V, sigma, ...) for the stars component.  
-- **Degree**: Degree of the additive Legendre polynomial used to correct the template continuum shape during the fit. Set ``degree=-1`` to not include any additive polynomial. 
+- **Degree**: Degree of the additive Legendre polynomial used to correct the template continuum shape during the fit. Set ``degree=-1`` to not include any additive polynomial.
 - **Linear**: If set to True only performs a linear least-squares routine for the templates and additive polynomial weights. Setting this to true may provide a better fit to the kinematic components (V, sigma, ...), but note that dust attenuation will not be fit when this is done. A workaround would be to set the **bounds** parameter based on the fit this provides, and then set Linear back to False.
 
 ## Accessing the Starburst99 and BPASS Libraries
-After following the installation instructions you will have automatic access to the sample libraries located in the GalSpecFitX subfolder ``sample_libraries``. The sample libraries provided are the Starburst99 Geneva High evolutionary track, Salpeter IMF for instantaneous star formation models, and BPASS Salpeter IMF (`imf135all_100`) single star formation models. The provided config.ini file uses these libraries by default by setting the `lib_path` parameter to None.
+
+After following the installation instructions you will have automatic access to the sample libraries located in the GalSpecFitX subfolder ``sample_libraries``. The sample libraries provided are the Starburst99 Geneva High evolutionary track, Salpeter and Kroupa IMF for instantaneous, single-star formation models, and BPASS Salpeter IMF (`imf135all_100`) and Kroupa IMF (`imf135_100`) for instantaneous single- and binary- star formation models. The provided config.ini file uses these libraries by default by setting the `lib_path` parameter to None.
 
 #### How to access the full suite of libraries using GIT LFS
 
@@ -219,12 +220,12 @@ Following a run of the GalSpecFitX software, the following outputs are produced:
 
 | **Filename**                         | **Format**          | **Description**                                                                                               |
 |--------------------------------------|---------------------|---------------------------------------------------------------------------------------------------------------|
-| `bestfit.fits`                       | FITS format         | Contains two extensions, one with the processed spectrum `PROCESSED_DATA_<segment>`, including fluxes and associated errors, and one containing the best-fit continuum `BESTFIT`.      |
-| `fitted_spectrum_static`             | PNG                 | Static plot of the best fitting solution and residuals.         |
-| `interactive_fitted_spectrum`        | HTML                | Interactive plot of the best fitting solution.                                            |
-| `light_weights`                      | PNG                 | The fraction of each model in the best-fit continuum, where model ages are plotted on the x-axis and model metallicities are provided in different colors. The best-fit age and metallicity are given in this plot.          |
-| `normalized_log_rebinned_spectrum_<segment>` | PNG | Plot of the galaxy spectrum after de-reddening, de-redshifting, binning, log-rebinning, and median normalization.             |
-| `spectral_fitting.log`               | Log File            | Log containing the input configuration file parameters and best fit parameters.         |
+| `bestfit_<config_filename>.fits`                       | FITS format         | Contains two extensions, one with the preprocessed spectrum `PREPROCESSED_SPECTRUM`, containing wavelengths, fluxes, and errors, and one containing the best-fit continuum `BESTFIT`.      |
+| `bestfit_<config_filename>_static.png`             | PNG                 | Static plot of the best fitting solution and residuals.         |
+| `bestfit_<config_filename>_interactive.html`        | HTML                | Interactive plot of the best fitting solution.                                            |
+| `light_weights_<config_filename>.png                      | PNG                 | The fraction of each model in the best-fit continuum, where model ages are plotted on the x-axis and model metallicities are provided in different colors. The best-fit age and metallicity are given in this plot.          |
+| `<config_filename>_preprocessed.png` | PNG | Plot of the galaxy spectrum after de-reddening, de-redshifting, binning, log-rebinning, and median normalization.             |
+| `spectral_fitting_<config_filename>.log`               | Log File            | Log containing the input configuration file parameters and best fit parameters.         |
 
 ## License
 This software is licensed under the BSD 3-Clause License (see the LICENSE file for details).

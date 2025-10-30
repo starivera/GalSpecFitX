@@ -1,106 +1,96 @@
 #!/usr/bin/env python
 
-import os
 import ast
 import sys
 import argparse
 import logging
 import configparser
+from pathlib import Path
+import contextlib
 import matplotlib.pyplot as plt
-import plotly.tools as tls
 import plotly.io as pio
 import numpy as np
-from GalSpecFitX.galaxy_prep import GalaxySpectrum, DeReddeningOperation, DeRedshiftOperation, BinningOperation, LogRebinningOperation, NormalizationOperation, ProcessedGalaxySpectrum
-from GalSpecFitX.combine_and_fit import SpectrumProcessor, InstrumentInfo, Starburst99LibraryHandler, BPASSLibraryHandler
 
-def read_config(filename: str, input_path: str) -> configparser.ConfigParser:
-    """Read configuration file.
+from GalSpecFitX.galaxy_preprocess import (
+    GalaxySpectrum,
+    DeReddeningOperation,
+    DeRedshiftOperation,
+    BinningOperation,
+    LogRebinningOperation,
+    NormalizationOperation,
+    ProcessedGalaxySpectrum,
+)
+from GalSpecFitX.combine_and_fit import (
+    SpectrumProcessor,
+    InstrumentInfo,
+    Starburst99LibraryHandler,
+    BPASSLibraryHandler,
+)
 
-    Args:
-    ----
-    filename : str
-        Name of the configuration file.
-    input_path : str
-        Directory path where the configuration file is located.
+# -----------------------------------------------------------------------------
+# Utility functions
+# -----------------------------------------------------------------------------
 
-    Returns:
-    -------
-    config : configparser.ConfigParser
-        Configuration parser object containing parsed data.
-
-    Raises:
-    -------
-    FileNotFoundError
-        If the specified configuration file does not exist.
-    """
-
-    config_file = os.path.join(input_path, filename) if input_path else filename
-
-    if not os.path.exists(config_file):
-        raise FileNotFoundError(f"The configuration file {config_file} does not exist.")
+def read_config(filename: str, input_path: Path) -> configparser.ConfigParser:
+    """Read and validate configuration file."""
+    config_file = input_path / filename
+    if not config_file.exists():
+        raise FileNotFoundError(f"Configuration file {config_file} not found.")
 
     config = configparser.ConfigParser()
+    config.read(config_file)
 
-    try:
-        config.read(config_file)
-    except configparser.Error as e:
-        raise ValueError(f"Error parsing the configuration file: {e}")
-
-    required_sections = ['Settings', 'instrument', 'library', 'fit']
-    missing_sections = [section for section in required_sections if section not in config]
-    if missing_sections:
-        raise KeyError(f"Missing required sections in the configuration file: {', '.join(missing_sections)}")
+    required_sections = ["Settings", "Instrument", "Library", "Fit"]
+    missing = [s for s in required_sections if s not in config]
+    if missing:
+        raise KeyError(f"Missing required sections: {', '.join(missing)}")
 
     return config
 
+
 def parse_args() -> argparse.Namespace:
-    """Parses command line arguments.
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Galaxy spectral fitting pipeline",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
 
-    Returns:
-    --------
-        args : argparse.Namespace object
-            An argparse object containing all of the added arguments.
+    parser.add_argument(
+        "--input_path", "-i", type=str, default=".",
+        help="Input directory containing galaxy data and config file."
+    )
+    parser.add_argument(
+        "--config_file", "-c", type=str, default="config.ini",
+        help="Configuration filename (expected in input_path)."
+    )
+    parser.add_argument(
+        "--output_path", "-o", type=str, default=None,
+        help="Output directory for results."
+    )
+    parser.add_argument(
+        "--verbose", "-v", action="store_true",
+        help="Enable debug logging."
+    )
 
-    """
-
-    #Create help strings:
-    input_path_help = "Input path containing galaxy data. If not provided assumes current directory. Please provide galaxy filename in your configuration file."
-    config_file_help = "Configuration filename (default: config.ini) which is expected to be in input_path."
-    output_path_help = "Output path for results. If not provided results will be generated in input_path."
-
-
-    # Add arguments:
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--input_path', '-input_path', dest = 'input_path', action = 'store',
-                        type = str, required = False, help = input_path_help)
-    parser.add_argument('--config_file', '-config_file', dest = 'config_file', action = 'store',
-                        type = str, required = False, default='config.ini', help = config_file_help)
-    parser.add_argument('--output_path', '-output_path', dest = 'output_path', action = 'store',
-                        type = str, required = False, help = output_path_help)
+    return parser.parse_args()
 
 
-    # Parse args:
-    args = parser.parse_args()
-
-    return args
-
-def configure_logging(filename: str) -> None:
-    """Configures logging to a specified file.
-
-    Args:
-    ----
-    filename : str
-        Name of the log file to configure.
-    """
-
-    try:
-        logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s', filename=filename, filemode='w')
-        logging.info('Logging configured successfully')
-    except Exception as e:
-        logging.exception(f"Failed to configure logging: {e}")
+def setup_logging(log_path: Path, verbose: bool = False) -> None:
+    """Set up logging to both console and file."""
+    log_level = logging.DEBUG if verbose else logging.INFO
+    handlers = [
+        logging.FileHandler(log_path, mode="w"),
+        logging.StreamHandler(sys.stdout)
+    ]
+    logging.basicConfig(
+        level=log_level,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        handlers=handlers
+    )
+    logging.info(f"Logging initialized → {log_path}")
 
 class Logger:
-    def __init__(self, filename="logfile.log"):
+    def __init__(self, filename: Path):
         self.terminal = sys.stdout
         self.log_file = open(filename, "a")
 
@@ -121,140 +111,105 @@ class Logger:
         # Automatically close the log file when exiting the context
         self.log_file.close()
 
-def get_optional_config(section, key, default=None, convert_to=None):
-    value = section.get(key, default)
+def get_optional(section: configparser.SectionProxy, key: str, default=None, convert=None):
+    """Retrieve an optional config value with type conversion."""
+    value = section.get(key, fallback=None)
+    if value is None or value.lower() == "none":
+        return default
+    try:
+        return convert(value) if convert else value
+    except Exception as e:
+        raise ValueError(f"Failed to convert {key}='{value}': {e}")
 
-    if value is not None:
-        if value.lower() == "none":
-            value=None
 
-        else:
-            try:
-                value = convert_to(value)
-            except Exception as e:
-                raise ValueError(f"Failed to convert value '{value}' for key '{key}' in section '{section.name}': {e}")
-
-    return value
-
+# -----------------------------------------------------------------------------
+# Main execution
+# -----------------------------------------------------------------------------
 
 def main() -> None:
+    args = parse_args()
 
-    """Main function."""
+    input_path = Path(args.input_path).resolve()
+    output_path = Path(args.output_path or input_path)
+    output_path.mkdir(parents=True, exist_ok=True)
 
-    # user input arguments
-    args           = parse_args()
-    input_path     = args.input_path
-    config_file    = args.config_file
-    output_path    = args.output_path
-    input_path = input_path if input_path else os.getcwd()
-    output_path = output_path if output_path else input_path
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
+    config = read_config(args.config_file, input_path)
+    config_filename = Path(args.config_file).stem
 
+    log_filename = output_path / f"spectral_fitting_{config_filename}.log"
+    setup_logging(log_filename, verbose=args.verbose)
 
-    config = read_config(config_file, input_path)
-    settings = config['Settings']
-    instrument = config['instrument']
-    dereddening = config['dereddening']
-    library = config['library']
-    fit = config['fit']
+    settings = config["Settings"]
+    instrument = config["Instrument"]
+    dered = config["Dereddening"]
+    library = config["Library"]
+    fit = config["Fit"]
 
-    # Settings parameters
-    gal_filename = settings['galaxy_filename']
-    segment = settings['segment']
-    bin_width = int(settings['bin_width'])
-    default_noise = float(settings['default_noise'])
-    z_guess = float(settings['z_guess'])
+    # --- Settings ---
+    gal_filename = settings["galaxy_filename"]
+    segment = settings["segment"]
+    bin_width = settings.getint("bin_width")
+    default_noise = settings.getfloat("default_noise")
+    z_guess = settings.getfloat("z_guess")
 
-
-    log_file = 'spectral_fitting.log'
-    log_filename = os.path.join(output_path, log_file)
-    configure_logging(log_filename)
-
-    # Instrument parameters
-    FWHM_gal = get_optional_config(instrument, 'FWHM_gal', default=None, convert_to=float)
-
+    # --- Instrument ---
+    FWHM_gal = get_optional(instrument, "FWHM_gal", convert=float)
     if FWHM_gal is None:
-        instr_lam_min = instrument.getfloat('instr_lam_min')
-        instr_lam_max = instrument.getfloat('instr_lam_max')
-        R = instrument.getfloat('R')
-        FWHM_gal = InstrumentInfo(R, instr_lam_min, instr_lam_max).calc_FWHM_gal()
+        lam_min = instrument.getfloat("instr_lam_min")
+        lam_max = instrument.getfloat("instr_lam_max")
+        R = instrument.getfloat("R")
+        FWHM_gal = InstrumentInfo(R, lam_min, lam_max).calc_FWHM_gal()
 
-    # Dereddening Parameters
-    ebv = float(dereddening.get('ebv', 0.0))
-    Rv = float(dereddening.get('Rv', 3.1))
-    ext_model = dereddening.get('model_name', 'CCM89').upper()
+    # --- Dereddening ---
+    ebv = float(dered.get("ebv", 0.0))
+    Rv = float(dered.get("Rv", 3.1))
+    ext_model = dered.get("model_name", "CCM89").upper()
 
-    # Library parameters
-    lib_path = get_optional_config(library, 'lib_path', default=None, convert_to=str)
+    # --- Library ---
+    lib_path = get_optional(library, "lib_path", default=None, convert=str)
+    lib_path = Path(lib_path or Path(__file__).parent / "sample_libraries")
 
-    if lib_path is None:
-        lib_path = os.path.dirname(os.path.abspath(__file__)) + '/sample_libraries'
-
-    library_name = library['Library'].upper()
-
-    if library_name not in ['STARBURST99', 'BPASS']:
-        logging.error(f"Unknown library: {library_name}")
+    library_name = library["Library"].upper()
+    if library_name not in {"STARBURST99", "BPASS"}:
         raise ValueError(f"Unsupported library: {library_name}")
 
-    evol_track = get_optional_config(library, 'evol_track', default=None, convert_to=str)
+    evol_track = get_optional(library, "evol_track", default=None, convert=str)
+    if evol_track is None and library_name == "STARBURST99":
+        evol_track = "geneva_high"
 
-    if evol_track is None and library_name == 'STARBURST99':
-        evol_track = 'geneva_high'
-    elif evol_track is not None and library_name != 'STARBURST99':
-        logging.info("evol_track parameter can only be used with Starburst99 and will therefore be ignored.")
+    imf = library["IMF"].lower()
+    star_form = library["star_form"].lower()
+    star_pop = library["star_pop"].lower()
+    age_range = ast.literal_eval(library["age_range"])
+    metal_range = ast.literal_eval(library["metal_range"])
+    norm_range = ast.literal_eval(library["norm_range"])
 
-    imf = library['IMF'].lower()
-
-    star_form = library['star_form'].lower()
-    star_pop = library['star_pop'].lower()
-
-    age_range_str = library['age_range']  # e.g., "[0.0, 0.4]"
-    age_range = ast.literal_eval(age_range_str)  # Converts the string to a list
-
-    metal_range_str = library['metal_range']
-    metal_range = ast.literal_eval(metal_range_str)
-
-    norm_range_str = library['norm_range']
-    norm_range = ast.literal_eval(norm_range_str)
-
-    # Fit parameters
+    # --- Fit parameters ---
     processor_config = {
-        'age_range': age_range,
-        'metal_range': metal_range,
-        'norm_range': norm_range,
-        'FWHM_gal': FWHM_gal,
-        'output_path': output_path,
-        'segment': segment,
-        'default_noise': default_noise,
+        "age_range": age_range,
+        "metal_range": metal_range,
+        "norm_range": norm_range,
+        "FWHM_gal": FWHM_gal,
+        "output_path": str(output_path),
+        "default_noise": default_noise,
+        "config_filename": config_filename,
     }
 
     for key, value in fit.items():
-        if value.lower() == "none":
-            value = None
-        elif value.lower() in ['true', 'false']:
-            value = value.lower() == 'true'
-        else:
-            try:
-                # Use ast.literal_eval() to safely evaluate the value
-                value = ast.literal_eval(value)
-            except (ValueError, SyntaxError) as e:
-                logging.error(f"Error processing {key}: {e}")
-                continue
+        try:
+            if value.lower() == "none":
+                parsed_value = None
+            elif value.lower() in ("true", "false"):
+                parsed_value = value.lower() == "true"
+            else:
+                parsed_value = ast.literal_eval(value)
+        except Exception:
+            parsed_value = value
 
-        processor_config[key] = value
-
-    if key == 'absorp_lam':
-        if isinstance(value, list):
-            # Leave as list for default-window logic
-            processor_config[key] = value
-        elif isinstance(value, dict):
-            # Ensure keys are float if provided as strings
-            processor_config[key] = {float(k): float(v) for k, v in value.items()}
-        else:
-            raise ValueError("Invalid format for 'absorp_lam'; must be a list or a dict.")
-    else:
-        processor_config[key] = value
+        if key == "absorp_lam":
+            if isinstance(parsed_value, dict):
+                parsed_value = {float(k): float(v) for k, v in parsed_value.items()}
+        processor_config[key] = parsed_value
 
     # Log all configuration parameters
     logging.info("Configuration Parameters:")
@@ -263,59 +218,48 @@ def main() -> None:
         for key, value in config[section].items():
             logging.info(f"{key}: {value}")
 
-    base_spectrum = GalaxySpectrum(input_path+'/'+gal_filename, segment)
+    # --- Spectrum Processing ---
+    base = GalaxySpectrum(str(input_path / gal_filename), segment)
     operations = [
         DeReddeningOperation(ebv, ext_model, Rv),
         DeRedshiftOperation(z_guess),
         BinningOperation(bin_width),
         LogRebinningOperation(),
-        NormalizationOperation(norm_range)
+        NormalizationOperation(norm_range),
     ]
-    processed_spectrum = ProcessedGalaxySpectrum(base_spectrum, operations)
-    processed_data = processed_spectrum.apply_operations()
+    processed = ProcessedGalaxySpectrum(base, operations).apply_operations()
 
-    # Save processed spectrum to a FITS file named bestfit.fits
-    base_spectrum.create_new_table(processed_data, output_path)
+    try:
+        base.create_new_table(processed, output_path, config_filename)
+        base.create_plots(processed, output_path, config_filename)
+    except Exception as e:
+        logging.error(f"Error saving or plotting: {e}")
 
-    lam_gal_log_rebin, norm_flux_gal_log_rebin, norm_err_gal_log_rebin = processed_data
+    # --- Fitting ---
+    processor = SpectrumProcessor(processor_config, processed)
+    if processor_config.get("absorp_lam"):
+        R = instrument.getfloat("R", fallback=None)
+        if R is None:
+            raise ValueError("Must provide resolving power 'R' to use spectral line masking.")
+        processor_config["mask"] = processor.mask_spectral_lines(R)
 
-    # Create the Matplotlib figure
-    fig, ax = plt.subplots(figsize=(11, 5))
-    plt.plot(lam_gal_log_rebin, norm_flux_gal_log_rebin, label=f'{segment} spectrum')
-    plt.plot(lam_gal_log_rebin, norm_err_gal_log_rebin, linestyle='None', marker='.', markersize=1, label='Error')
-    plt.title(f'{gal_filename} - Deredshifted, SpectRes Binned, Log-Rebinned, Median Normalized Spectrum')
-    plt.xlabel('Rest Wavelength (Å)')
-    plt.ylabel('Median Normalized Flux')
-    plt.legend()
-    plt.grid(alpha=0.5)
+    if library_name == "STARBURST99":
+        lib_handler = Starburst99LibraryHandler(imf, star_form, star_pop, str(lib_path), evol_track)
+    else:
+        lib_handler = BPASSLibraryHandler(imf, star_form, star_pop, str(lib_path))
 
-    # Convert Matplotlib figure to Plotly
-    plotly_fig = tls.mpl_to_plotly(fig)
-
-    # Save the interactive plot as an HTML file
-    pio.write_html(plotly_fig, file=os.path.join(output_path,f'normalized_log_rebinned_spectrum_{segment}.html'), auto_open=False)
-
-
-    # Initialize SpectrumProcessor for combining and fitting
-    processor = SpectrumProcessor(processor_config, processed_data)
-
-    # Call mask_spectral_lines if aborption wavelengths are provided
-    if processor_config['absorp_lam'] is not None:
-
-        assert instrument['R'].lower() != "none", "Must provide resolving power to use spectral line masking."
-
-        R = float(instrument['R'])
-        processor_config['mask'] = processor.mask_spectral_lines(R)
-
-    if library_name == 'STARBURST99':
-        library_handler = Starburst99LibraryHandler(imf, star_form, star_pop, lib_path, evol_track)
-    elif library_name == 'BPASS':
-        library_handler = BPASSLibraryHandler(imf, star_form, star_pop, lib_path)
-
+    # --- Execute fitting with redirected stdout and stderr ---
     with Logger(log_filename) as logger:
         sys.stdout = logger
-        processor.process_spectrum(library_handler)
-        sys.stdout = sys.stdout.terminal  # Restore the original stdout
+        sys.stderr = logger
+        try:
+            processor.process_spectrum(lib_handler)
+        finally:
+            # Restore original stdout/stderr
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
 
-if __name__ == '__main__':
+# -----------------------------------------------------------------------------
+
+if __name__ == "__main__":
     main()

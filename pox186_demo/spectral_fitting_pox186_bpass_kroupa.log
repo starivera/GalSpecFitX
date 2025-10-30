@@ -1,0 +1,682 @@
+2025-10-30 09:21:10,474 [INFO] Logging initialized → /grp/hst/wfc3i/irivera/tsrc/GalSpecFitX/pox186_demo/spectral_fitting_pox186_bpass_kroupa.log
+2025-10-30 09:21:10,474 [INFO] FWHM_gal: 0.08288 Å
+2025-10-30 09:21:10,475 [INFO] Configuration Parameters:
+2025-10-30 09:21:10,475 [INFO] [Settings]
+2025-10-30 09:21:10,475 [INFO] galaxy_filename: pox186_g130M_g160M_spectrum.fits
+2025-10-30 09:21:10,475 [INFO] segment: RESAMPLED_SPECTRUM
+2025-10-30 09:21:10,475 [INFO] bin_width: 6
+2025-10-30 09:21:10,475 [INFO] default_noise: 1.0
+2025-10-30 09:21:10,475 [INFO] z_guess: 0.0040705
+2025-10-30 09:21:10,475 [INFO] [Instrument]
+2025-10-30 09:21:10,475 [INFO] fwhm_gal: None
+2025-10-30 09:21:10,475 [INFO] r: 15250
+2025-10-30 09:21:10,475 [INFO] instr_lam_min: 900
+2025-10-30 09:21:10,475 [INFO] instr_lam_max: 1775
+2025-10-30 09:21:10,475 [INFO] [Dereddening]
+2025-10-30 09:21:10,475 [INFO] ebv: 0.0385
+2025-10-30 09:21:10,475 [INFO] model_name: CCM89
+2025-10-30 09:21:10,475 [INFO] rv: 3.1
+2025-10-30 09:21:10,475 [INFO] [Library]
+2025-10-30 09:21:10,475 [INFO] lib_path: None
+2025-10-30 09:21:10,475 [INFO] library: BPASS
+2025-10-30 09:21:10,475 [INFO] evol_track: None
+2025-10-30 09:21:10,475 [INFO] imf: imf135_100
+2025-10-30 09:21:10,476 [INFO] star_form: instantaneous
+2025-10-30 09:21:10,476 [INFO] star_pop: single
+2025-10-30 09:21:10,476 [INFO] age_range: [0.0, 0.01]
+2025-10-30 09:21:10,476 [INFO] metal_range: None
+2025-10-30 09:21:10,476 [INFO] norm_range: [1350, 1360]
+2025-10-30 09:21:10,476 [INFO] [Fit]
+2025-10-30 09:21:10,476 [INFO] start: None
+2025-10-30 09:21:10,476 [INFO] absorp_lam: [1201.61, 1248.73, 1255.31, 1296.89, 1299.08, 1329.12, 1388.11, 1397.08, 1520.52, 1541.92, 1544.48, 1664.02, 1800.68]
+2025-10-30 09:21:10,476 [INFO] bias: None
+2025-10-30 09:21:10,476 [INFO] bounds: [[0.0, 100.], [0.0, 40.]]
+2025-10-30 09:21:10,476 [INFO] clean: False
+2025-10-30 09:21:10,476 [INFO] constr_templ: None
+2025-10-30 09:21:10,476 [INFO] constr_kinem: None
+2025-10-30 09:21:10,476 [INFO] degree: -1
+2025-10-30 09:21:10,476 [INFO] dust: {"start": [0.0], "bounds": [0, 4]}
+2025-10-30 09:21:10,476 [INFO] fixed: None
+2025-10-30 09:21:10,476 [INFO] fraction: None
+2025-10-30 09:21:10,476 [INFO] ftol: 1e-4
+2025-10-30 09:21:10,476 [INFO] global_search: False
+2025-10-30 09:21:10,476 [INFO] linear: False
+2025-10-30 09:21:10,476 [INFO] linear_method: "lsq_box"
+2025-10-30 09:21:10,476 [INFO] mask: [[1185, 1230], [1268, 1283], [1296, 1303], [1547, 1552], [1598, 1623], [1659, 1667]]
+2025-10-30 09:21:10,476 [INFO] method: "capfit"
+2025-10-30 09:21:10,476 [INFO] mdegree: 0
+2025-10-30 09:21:10,476 [INFO] n_iterations: 100
+2025-10-30 09:21:10,476 [INFO] quiet: False
+2025-10-30 09:21:10,476 [INFO] sigma_diff: 0.0
+2025-10-30 09:21:10,476 [INFO] trig: False
+2025-10-30 09:21:10,477 [INFO] vsyst: 0.0
+2025-10-30 09:21:10,477 [INFO] x0: None
+2025-10-30 09:21:13,579 [INFO] Beginning milky way line fitting
+2025-10-30 09:21:13,580 [INFO] Fitted absorption line at 1201.59 Å with FWHM = 0.62 Å
+2025-10-30 09:21:13,581 [INFO] Fitted absorption line at 1248.75 Å with FWHM = 0.32 Å
+2025-10-30 09:21:13,582 [INFO] Fitted absorption line at 1255.33 Å with FWHM = 0.47 Å
+2025-10-30 09:21:13,582 [INFO] Fitted absorption line at 1296.53 Å with FWHM = 0.94 Å
+2025-10-30 09:21:13,583 [INFO] Fitted absorption line at 1298.96 Å with FWHM = 0.77 Å
+2025-10-30 09:21:13,583 [INFO] Fitted absorption line at 1329.10 Å with FWHM = 0.54 Å
+2025-10-30 09:21:13,584 [INFO] Fitted absorption line at 1388.02 Å with FWHM = 0.78 Å
+2025-10-30 09:21:13,585 [INFO] Fitted absorption line at 1397.12 Å with FWHM = 0.67 Å
+2025-10-30 09:21:13,585 [INFO] Fitted absorption line at 1520.54 Å with FWHM = 0.58 Å
+2025-10-30 09:21:13,586 [INFO] Fitted absorption line at 1541.95 Å with FWHM = 0.60 Å
+2025-10-30 09:21:13,586 [INFO] Fitted absorption line at 1544.44 Å with FWHM = 0.81 Å
+2025-10-30 09:21:13,587 [INFO] Fitted absorption line at 1664.03 Å with FWHM = 0.61 Å
+2025-10-30 09:21:13,587 [WARNING] No data points found for absorption line at 1800.68. Skipping.
+2025-10-30 09:21:13,587 [INFO] Updated mask: [[1185, 1230], [1268, 1283], [1296, 1303], [1547, 1552], [1598, 1623], [1659, 1667], (1200.9695642116735, 1202.204459678997), (1248.4213368561575, 1249.0690769462028), (1254.854338301376, 1255.8005175359956), (1295.5949842207442, 1297.4663008036596), (1298.191645256421, 1299.7381212747969), (1328.5525447784128, 1329.6374829507474), (1387.2428292185446, 1388.7995952266874), (1396.4537904281026, 1397.7946141169007), (1519.9572227157905, 1521.1154586575612), (1541.341962575156, 1542.550419152741), (1543.6280801879736, 1545.242268503778), (1663.4145813001928, 1664.6408981936074)]
+2025-10-30 09:21:13,587 [INFO] Ending milky way line fitting
+2025-10-30 09:21:13,589 [INFO] Velocity scale per pixel: 12.48628 km/s
+2025-10-30 09:21:43,578 [INFO] Beginning galaxy spectral fitting
+'s
+ Best Fit:       Vel     sigma
+ comp.  0:         1        40
+Attenuation Parameters 0: 0.728
+chi2/DOF: 0.01613; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 4; Func calls: 18; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+/user/irivera/linux/miniconda3/envs/galspecfitx/lib/python3.12/site-packages/plotly/matplotlylib/mplexporter/exporter.py:87: UserWarning:
+
+Blended transforms not yet supported. Zoom behavior may not work as expected.
+
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 1.010; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 7/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.827
+chi2/DOF: 1.017; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:        26        40
+Attenuation Parameters 0: 0.856
+chi2/DOF: 0.9923; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 0.9926; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 0.9926; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 0.9926; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 0.9926; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 0.9926; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 0.9926; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
+ Best Fit:       Vel     sigma
+ comp.  0:         0        40
+Attenuation Parameters 0: 0.851
+chi2/DOF: 0.9926; DOF: 9125; degree = -1; mdegree = 0
+method = capfit; Jac calls: 3; Func calls: 14; Status: 2
+linear_method = lsq_box; Nonzero Templates (>0.1%): 6/143
