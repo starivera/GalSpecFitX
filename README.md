@@ -116,11 +116,11 @@ This section defines the stellar population models used for fitting.
 | `lib_path`  | str/None | Path to library (BPASS or STARBURST99). If None or not provided only sample libraries are used.  |
 | `Library`   | string | Name of the library for stellar population templates (`STARBURST99` or `BPASS`).  |
 | `evol_track`| string | Evolutionary track. Only applies to Starburst99 libraries. Default is `geneva_high`. |
-| `IMF`       | string | Initial mass function (IMF) used in the library (See Accessing Libraries section).    |
-| `star_form` | string | Star formation model (Instantaneous or Continuous).                       |
-| `star_pop`  | string | Type of stellar population (Single or Binary).                       |
+| `IMF`       | string | Initial mass function (IMF) used in the library (See **All Available libraries**).    |
+| `star_form` | string | Star formation model (instantaneous or continuous).                       |
+| `star_pop`  | string | Type of stellar population (single or binary).                       |
 | `age_range` | list of float | Age range for stellar templates (in Gyr) (e.g.[0.0, 1.0]).                    |
-| `metal_range`| list of float | Metallicity range for stellar templates (e.g. [0.0, 0.020], Z_solar = 0.020).                   |
+| `metal_range`| list of float | Metallicity range for stellar templates (e.g. [0.0, 0.020], Z☉ = 0.020).                   |
 | `norm_range` | list of float | Wavelength range to be used to normalize the stellar templates and galaxy spectrum (in Å). If None provided median normalization of the entire spectrum is performed. |
 
 ### 5. Fit Section
@@ -193,7 +193,7 @@ Finally, all that needs to be done to start using the full suite is to direct th
 
 ### <u>All Available libraries</u>
 
-A full suite of STARBURST99 and BPASS are currently available, and are provided in the root directory of the repository. The table below identifies the full criteria and keywords for selecting a set of models in your configuration file based on parameters such as evolutionary track, IMF slopes, and type of star formation.
+A full suite of STARBURST99 and BPASS are currently available, and are provided in the root directory of the repository. The table below identifies the full criteria and keywords for selecting a set of models in your configuration file based on parameters such as evolutionary track, IMF slopes, upper mass cut-off, and type of star formation.
 
 For Starburst99:
 
@@ -203,7 +203,7 @@ For Starburst99:
 | `padova_agb` -> selection of the 1992 - 1994 Padova tracks with thermally pulsing AGB stars added.          | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>   |
 | `geneva_std` -> selection of the 1994 Geneva tracks with "standard" mass-loss rates.   | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       |
 | `geneva_high` -> Geneva tracks with high mass-loss rates.  | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       |
-
+**Note:** All upper mass cut-offs are 100 M☉
 For further explanation of these choices see: https://massivestars.stsci.edu/starburst99/docs/run.html#IZ
 
 For BPASS:
@@ -211,7 +211,7 @@ For BPASS:
 | **Star Formation (`star_form`)** | **Initial Mass Function (`IMF`)** |
 |----------------------------------|-----------------------------------|
 | `single`<br> `binary`            | `imf_chab100`<br> `imf_chab300`<br> `imf100_100`<br> `imf100_300`<br> `imf135_100`<br>  `imf135_300`<br> `imf135all_100`<br> `imf170_100`<br> `imf170_300`<br> |
-
+**Note:** The suffix _100 indicates an upper mass cutoff of 100 M☉, while _300 represents an upper mass cutoff of 300 M☉
 For further explanation of these choices see the BPASS [manual](https://livewarwickac.sharepoint.com/sites/Physics-BinaryPopulationandSpectralSynthesisBPASS/Shared%20Documents/Forms/AllItems.aspx?ga=1&id=%2Fsites%2FPhysics%2DBinaryPopulationandSpectralSynthesisBPASS%2FShared%20Documents%2FBPASS%5Fv2%2E2%5Frelease%2FBPASS%20v2%2E2%2E1%20full%20release%2FBPASSv2%2E2%2E1%5FManual%2Epdf&viewid=141639b8%2D0962%2D4a5a%2Db1e4%2D8977a94c88eb&parent=%2Fsites%2FPhysics%2DBinaryPopulationandSpectralSynthesisBPASS%2FShared%20Documents%2FBPASS%5Fv2%2E2%5Frelease%2FBPASS%20v2%2E2%2E1%20full%20release).
 
 ## <u>Output</u>
@@ -223,7 +223,7 @@ Following a run of the GalSpecFitX software, the following outputs are produced:
 | `bestfit_<config_filename>.fits`                       | FITS format         | Contains two extensions, one with the preprocessed spectrum `PREPROCESSED_SPECTRUM`, containing wavelengths, fluxes, and errors, and one containing the best-fit continuum `BESTFIT`.      |
 | `bestfit_<config_filename>_static.png`             | PNG                 | Static plot of the best fitting solution and residuals.         |
 | `bestfit_<config_filename>_interactive.html`        | HTML                | Interactive plot of the best fitting solution.                                            |
-| `light_weights_<config_filename>.png                      | PNG                 | The fraction of each model in the best-fit continuum, where model ages are plotted on the x-axis and model metallicities are provided in different colors. The best-fit age and metallicity are given in this plot.          |
+| `light_weights_<config_filename>.png`                      | PNG                 | The fraction of each model in the best-fit continuum, where model ages are plotted on the x-axis and model metallicities are provided in different colors. The best-fit age and metallicity are given in this plot.          |
 | `<config_filename>_preprocessed.png` | PNG | Plot of the galaxy spectrum after de-reddening, de-redshifting, binning, log-rebinning, and median normalization.             |
 | `spectral_fitting_<config_filename>.log`               | Log File            | Log containing the input configuration file parameters and best fit parameters.         |
 

@@ -36,7 +36,7 @@ bibliography: paper.bib
 ---
 
 # Summary
-`GalSpecFitX` is an open-source Python package for the full-spectrum fitting of galaxy spectra using the widely adopted Penalized Pixel-Fitting method (`pPXF`) [@Cappellari2004; @Cappellari2017]. The software automates the common preprocessing steps required for reliable fitting—including galactic extinction correction, redshift correction, binning, and normalization—and provides straightforward access to stellar population synthesis models such as `Starburst99` [@Leitherer1999; @Leitherer2014] and `BPASS` [@Eldridge2017].
+`GalSpecFitX` is an open-source Python package for the full-spectrum fitting of galaxy spectra using the widely adopted Penalized Pixel-Fitting method (`pPXF`) [@Cappellari2004; @Cappellari2017]. The software automates the common preprocessing steps required for reliable fitting—including Galactic extinction correction, redshift correction, binning, and normalization—and provides straightforward access to stellar population synthesis models such as `Starburst99` [@Leitherer1999; @Leitherer2014] and `BPASS` [@Eldridge2017].
 
 By combining a reproducible configuration system with modular design, `GalSpecFitX` lowers the barrier to entry for researchers new to spectral fitting, while providing flexibility for advanced users. The package enables astronomers to derive key physical properties of galaxies—such as stellar ages, metallicities, dust attenuation, and star formation histories—without requiring extensive expertise in data preparation or model handling.
 
@@ -65,7 +65,7 @@ This combination makes `GalSpecFitX` especially useful for researchers who want 
 
 - `main.py` — Central driver script that reads the configuration file, loads the input galaxy data, and orchestrates the preprocessing and fitting steps.
 
-- `galaxy_preprocess.py` — Handles all preprocessing operations (e.g., galactic dereddening, deredshifting, binning, and normalization).
+- `galaxy_preprocess.py` — Handles all preprocessing operations (e.g., Galactic dereddening, deredshifting, binning, and normalization).
 
 - `galaxy_fit.py` — Retrieves the appropriate SPS templates and executes the pPXF algorithm using user-defined parameters.
 
@@ -139,7 +139,7 @@ The software supports fitting with multiple stellar population models. Figures 2
 
 `GalSpecFitX` can also generate light-weighted population diagnostics, which quantify the contributions of stellar populations of different ages and metallicities to the best-fit population synthesis models (Figure 4).
 
-![Light-weighted stellar population contributions inferred from `Starburst99` (left) and `BPASS` (right) fits to Pox 186. The x-axis shows stellar age, while colors represent metallicity. The vertical dashed line marks the average stellar age.](figures/pox186_lightweights_combined.png)
+![Light-weighted stellar population contributions inferred from `Starburst99` (left) and `BPASS` (right) fits to Pox 186. The x-axis shows stellar age, while colors represent metallicity. The vertical dashed line marks the average stellar age. Uncertainties were estimated with `GalSpecFitX` through Monte Carlo perturbations of the observed spectrum, configured with `n_iterations = 1000`.](figures/pox186_lightweights_combined.png)
 
 Parameter estimates from both models are in good agreement with published results [@Rogers2023]. For example, `GalSpecFitX` recovered average stellar ages of ~2–3 Myr, subsolar metallicities (Z ~0.2–0.3 Z⊙), and attenuation values of AV ~0.6–0.7 mag. The software also allows users to estimate uncertainties through an optional Monte Carlo module, which perturbs the input spectrum and re-fits multiple realizations. The number of iterations is controlled by the `n_iterations` parameter in the configuration file. These results highlight the software’s ability to extract physically meaningful parameters from ultraviolet spectra in a fully reproducible workflow.
 
