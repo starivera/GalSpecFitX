@@ -91,7 +91,7 @@ def age_metal(filename):
     age : float
         Stellar population age in Gyr.
     metal : float
-        Metallicity in fractional solar units (e.g., 0.020 ≈ Solar).
+        Metallicity in fractional solar units (e.g., 0.020 = Z☉).
 
     Raises
     ------

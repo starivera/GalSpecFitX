@@ -138,7 +138,7 @@ class LibraryHandler(ABC):
 
         :param velscale: Velocity scale per pixel in km/s.
         :param age_range: List of two floats representing the age range in Gyr for the templates to be retrieved `[age_min, age_max]`.
-        :param metal_range: List of two floats representing the metallicity range for the templates to be retrieved `[metal_min, metal_max]` (e.g., 0.020 = Z_solar).
+        :param metal_range: List of two floats representing the metallicity range for the templates to be retrieved `[metal_min, metal_max]` (e.g., 0.020 = Z☉).
         :param norm_range: List of two floats representing the wavelength range in Angstroms within which to compute the templates' normalization `[norm_min, norm_max]`.
         :param FWHM_gal: Full Width at Half Maximum (FWHM) of the galaxy's spectral line spread, in km/s.
 
@@ -182,7 +182,7 @@ class Starburst99LibraryHandler(LibraryHandler):
 
         :param velscale: Velocity scale per pixel in km/s.
         :param age_range: List of two floats representing the age range in Gyr for the templates to be retrieved `[age_min, age_max]`.
-        :param metal_range: List of two floats representing the metallicity range for the templates to be retrieved `[metal_min, metal_max]` (e.g., 0.020 = Z_solar).
+        :param metal_range: List of two floats representing the metallicity range for the templates to be retrieved `[metal_min, metal_max]` (e.g., 0.020 = Z☉).
         :param norm_range: List of two floats representing the wavelength range in Angstroms within which to compute the templates' normalization `[norm_min, norm_max]`.
         :param FWHM_gal: Full Width at Half Maximum (FWHM) of the galaxy's spectral line spread, in km/s.
 
@@ -228,7 +228,7 @@ class BPASSLibraryHandler(LibraryHandler):
 
         :param velscale: Velocity scale per pixel in km/s.
         :param age_range: List of two floats representing the age range in Gyr for the templates to be retrieved `[age_min, age_max]`.
-        :param metal_range: List of two floats representing the metallicity range for the templates to be retrieved `[metal_min, metal_max]` (e.g., 0.020 = Z_solar).
+        :param metal_range: List of two floats representing the metallicity range for the templates to be retrieved `[metal_min, metal_max]` (e.g., 0.020 = Z☉).
         :param norm_range: List of two floats representing the wavelength range in Angstroms within which to compute the templates' normalization `[norm_min, norm_max]`.
         :param FWHM_gal: Full Width at Half Maximum (FWHM) of the galaxy's spectral line spread, in km/s.
 
