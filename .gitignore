@@ -1,7 +1,22 @@
+# Python bytecode files
 *.pyc
-*__pycache__*
+
+# Python cache folders
+__pycache__/
+
+# Build and distribution folders
 build/
 dist/
-*egg*
-*.ipynb_checkpoints
+
+# Egg files and folders (Python package metadata)
+*.egg
+*.egg-info/
+
+# Jupyter Notebook checkpoint folders
+.ipynb_checkpoints/
+
+# macOS resource fork files
 ._*
+
+# Pytest cache
+.pytest_cache/
