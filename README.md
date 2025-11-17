@@ -202,12 +202,14 @@ brew install git-lfs
 - Alternatively, follow the installation instructions for your platform on the [Git LFS website](https://git-lfs.com/).
 
 **2. Initialize Git LFS**
+
 Run this command once to set up Git LFS on your machine:
 ```
 git lfs install
 ```
 
 **3. Download the full libraries**
+
 Navigate to the root of your cloned repository (where the ``full_suite`` folder is located) and run:
  ```
  git lfs pull
@@ -222,7 +224,7 @@ If you want to store the libraries in a different location with more disk space,
 
 **5. Update your configuration to use the full suite**
 
-Open your ``config.ini`` file and set the lib_path parameter to the path where your full_suite folder is located. For example:
+Open your ``config.ini`` file and set the ``lib_path`` parameter to the path where your ``full_suite`` folder is located. For example:
 ```
 lib_path=/path/to/full_suite
 ```
