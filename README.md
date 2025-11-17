@@ -177,19 +177,52 @@ These are the parameters I recommend focusing on as they tend to have the greate
 
 ## Accessing the Starburst99 and BPASS Libraries
 
-After following the installation instructions you will have automatic access to the sample libraries located in the GalSpecFitX subfolder ``sample_libraries``. The sample libraries provided are the Starburst99 Geneva High evolutionary track, Salpeter and Kroupa IMF for instantaneous, single-star formation models, and BPASS Salpeter IMF (`imf135all_100`) and Kroupa IMF (`imf135_100`) for instantaneous single- and binary- star formation models. The provided config.ini file uses these libraries by default by setting the `lib_path` parameter to None.
+**Basic access:**
+After following the installation instructions, you will automatically have access to the sample libraries included in the repository under the folder ``GalSpecFitX/sample_libraries``. These sample libraries include:
 
-#### How to access the full suite of libraries using GIT LFS
+- **Starburst99**: Geneva High evolutionary track, Salpeter and Kroupa IMFs for instantaneous, single-star formation models
 
-The full suite of libraries although present in the root folder of the repository under `full_suite` will not be useable when you've first cloned the repository. Git Large File Storage (LFS) must be installed to fetch and download them. The first thing you will need to do is install Git LFS. If you have Homebrew you can do this by running:
+- **BPASS**: Salpeter IMF (``imf135all_100``) and Kroupa IMF (``imf135_100``) for instantaneous single- and binary-star formation models
 
-```brew install git-lfs``` or by way of one of the methods listed in the Git LFS [docs](https://git-lfs.com/).
+The provided config.ini file uses these sample libraries by default by setting the ``lib_path`` parameter to None.
 
-Next, run ```git lfs install``` to initialize it.
+#### Accessing the Full Suite of Libraries (Using Git LFS)
 
-Now you can download the models by running ```git lfs pull``` in the directory containing full_suite. **WARNING**: These libraries are LARGE, so if you would like to store the libraries somewhere with more storage space feel free to move the `full_suite` folder after downloading them.
+The full suite of libraries is stored in the ``full_suite`` folder at the root of the repository. Because these files are large (~10 GB), they are managed with Git Large File Storage (Git LFS) and are not downloaded automatically when you first clone the repo.
 
-Finally, all that needs to be done to start using the full suite is to direct the code to the directory via the `lib_path` parameter of your configuration file (e.g. lib_path=/path/to/full_suite). Now, you can explore all the models by choosing parameters based on the **All Available Libraries** section directly below.
+**To download and use the full suite, follow these steps:**
+
+**1. Install Git LFS**
+- If you have [Homebrew](https://brew.sh/), run:
+```brew install git-lfs```
+- Alternatively, follow the installation instructions for your platform on the [Git LFS website](https://git-lfs.com/).
+
+**2. Initialize Git LFS**
+Run this command once to set up Git LFS on your machine:
+```git lfs install```
+
+**3. Download the full libraries**
+Navigate to the root of your cloned repository (where the ``full_suite`` folder is located) and run:
+ ```git lfs pull``` 
+This will download all the large model files.
+
+***Note:** The full suite of libraries is large (~10 GB). Make sure you have enough free disk space.
+
+**4. (Optional) Move the ``full_suite`` folder**
+If you want to store the libraries in a different location with more disk space, you can move the entire ``full_suite`` folder. Just remember to update your ``config.ini`` accordingly (see step 5).
+
+**5. Update your configuration to use the full suite**
+Open your ``config.ini`` file and set the lib_path parameter to the path where your full_suite folder is located. For example:
+``lib_path=/path/to/full_suite``
+This tells the program to load models from the full library instead of the default sample set.
+
+##### Summary
+
+- Use the sample libraries out of the box without extra setup.
+
+- To use the full library set, install Git LFS, download the files with ``git lfs pull``, and update ``lib_path`` in your config.
+
+- The full library files are large (~10 GB), so plan your disk space accordingly.
 
 ### <u>All Available libraries</u>
 
