@@ -178,6 +178,7 @@ These are the parameters I recommend focusing on as they tend to have the greate
 ## Accessing the Starburst99 and BPASS Libraries
 
 **Basic access:**
+
 After following the installation instructions, you will automatically have access to the sample libraries included in the repository under the folder ``GalSpecFitX/sample_libraries``. These sample libraries include:
 
 - **Starburst99**: Geneva High evolutionary track, Salpeter and Kroupa IMFs for instantaneous, single-star formation models
