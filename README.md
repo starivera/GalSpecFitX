@@ -195,26 +195,36 @@ The full suite of libraries is stored in the ``full_suite`` folder at the root o
 
 **1. Install Git LFS**
 - If you have [Homebrew](https://brew.sh/), run:
-```brew install git-lfs```
+```
+brew install git-lfs
+```
 - Alternatively, follow the installation instructions for your platform on the [Git LFS website](https://git-lfs.com/).
 
 **2. Initialize Git LFS**
 Run this command once to set up Git LFS on your machine:
-```git lfs install```
+```
+git lfs install
+```
 
 **3. Download the full libraries**
 Navigate to the root of your cloned repository (where the ``full_suite`` folder is located) and run:
- ```git lfs pull``` 
+ ```
+ git lfs pull
+``` 
 This will download all the large model files.
 
 ***Note:** The full suite of libraries is large (~10 GB). Make sure you have enough free disk space.
 
 **4. (Optional) Move the ``full_suite`` folder**
+
 If you want to store the libraries in a different location with more disk space, you can move the entire ``full_suite`` folder. Just remember to update your ``config.ini`` accordingly (see step 5).
 
 **5. Update your configuration to use the full suite**
+
 Open your ``config.ini`` file and set the lib_path parameter to the path where your full_suite folder is located. For example:
-``lib_path=/path/to/full_suite``
+```
+lib_path=/path/to/full_suite
+```
 This tells the program to load models from the full library instead of the default sample set.
 
 ##### Summary
