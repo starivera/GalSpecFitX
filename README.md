@@ -1,5 +1,5 @@
 # GalSpecFitX
-Full Spectrum Galaxy Fitting Software Utilizing [STARBURST99](https://www.stsci.edu/science/starburst99/docs/default.htm) and [BPASS](https://bpass.auckland.ac.nz/) stellar population models.
+Full Spectrum Galaxy Fitting Software Utilizing [Starburst99](https://www.stsci.edu/science/starburst99/docs/default.htm) and [BPASS](https://bpass.auckland.ac.nz/) stellar population models.
 
 This software applies the Penalized Pixel-Fitting method (pPXF) developed by [Cappellari (2023)](https://ui.adsabs.harvard.edu/abs/2023MNRAS.526.3273C), which derives stellar population properties from galaxy spectra through full-spectrum fitting using a maximum penalized likelihood approach. GalSpecFitX performs a suite of preprocessing routines—such as Galactic dereddening, deredshifting, binning, and normalization—to ensure optimal performance with the fitting algorithm, and introduces additional features including spectral line masking and seamless integration with established stellar population synthesis libraries. Comprehensive Starburst99 and BPASS model suites are included for immediate use.
 
@@ -113,7 +113,7 @@ This section defines the stellar population models used for fitting.
 
 | Parameter   | Type   | Description                                                                       |
 |-------------|--------|-----------------------------------------------------------------------------------|
-| `lib_path`  | str/None | Path to library (BPASS or STARBURST99). If None or not provided only sample libraries are used.  |
+| `lib_path`  | str/None | Path to library (e.g. `lib_path=/path/to/full_suite`). `None` defaults to sample_libraries automatically provided.  |
 | `Library`   | string | Name of the library for stellar population templates (`STARBURST99` or `BPASS`).  |
 | `evol_track`| string | Evolutionary track. Only applies to Starburst99 libraries. Default is `geneva_high`. |
 | `IMF`       | string | Initial mass function (IMF) used in the library (See **All Available libraries**).    |
@@ -240,7 +240,7 @@ This tells the program to load models from the full library instead of the defau
 
 ### <u>All Available libraries</u>
 
-A full suite of STARBURST99 and BPASS are currently available, and are provided in the root directory of the repository. The table below identifies the full criteria and keywords for selecting a set of models in your configuration file based on parameters such as evolutionary track, IMF slopes, upper mass cut-off, and type of star formation.
+A full suite of Starburst99 and BPASS are currently available, and are provided in the root directory of the repository. The table below identifies the full criteria and keywords for selecting a set of models in your configuration file based on parameters such as evolutionary track, IMF slopes, upper mass cut-off, and type of star formation.
 
 For Starburst99:
 
