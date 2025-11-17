@@ -185,7 +185,7 @@ After following the installation instructions, you will automatically have acces
 
 - **BPASS**: Salpeter IMF (``imf135all_100``) and Kroupa IMF (``imf135_100``) for instantaneous single- and binary-star formation models
 
-The provided config.ini file uses these sample libraries by default by setting the ``lib_path`` parameter to None.
+The provided config.ini file uses these sample libraries by default by setting the ``lib_path`` parameter to ``None``.
 
 #### Accessing the Full Suite of Libraries (Using Git LFS)
 
