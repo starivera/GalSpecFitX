@@ -194,6 +194,7 @@ The full suite of libraries is stored in the ``full_suite`` folder at the root o
 **To download and use the full suite, follow these steps:**
 
 **1. Install Git LFS**
+
 - If you have [Homebrew](https://brew.sh/), run:
 ```
 brew install git-lfs
