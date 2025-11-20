@@ -1,7 +1,7 @@
 # GalSpecFitX
 Full Spectrum Galaxy Fitting Software Utilizing [Starburst99](https://www.stsci.edu/science/starburst99/docs/default.htm) and [BPASS](https://bpass.auckland.ac.nz/) stellar population models.
 
-This software applies the Penalized Pixel-Fitting method (pPXF) developed by [Cappellari (2023)](https://ui.adsabs.harvard.edu/abs/2023MNRAS.526.3273C), which derives stellar population properties from galaxy spectra through full-spectrum fitting using a maximum penalized likelihood approach. GalSpecFitX performs a suite of preprocessing routines—such as Galactic dereddening, deredshifting, binning, and normalization—to ensure optimal performance with the fitting algorithm, and introduces additional features including spectral line masking and seamless integration with established stellar population synthesis libraries. Comprehensive Starburst99 and BPASS model suites are included for immediate use.
+This software applies the Penalized Pixel-Fitting method (pPXF) developed by [Cappellari (2023)](https://ui.adsabs.harvard.edu/abs/2023MNRAS.526.3273C), which derives stellar population properties from galaxy spectra through full-spectrum fitting using a maximum penalized likelihood approach. GalSpecFitX performs a suite of preprocessing routines—such as Galactic dereddening, deredshifting, binning, and normalization—incorporates enhanced masking capabilities, and enables seamless integration with established stellar population synthesis libraries.
 
 ## HOW TO RUN
 1. Clone the GalSpecFitX repository.
@@ -21,9 +21,9 @@ This software applies the Penalized Pixel-Fitting method (pPXF) developed by [Ca
    ```
 
 ## DATA PREPARATION
-This software prepares a raw galaxy spectrum for spectral fitting by performing dereddening, deredshifting, binning, log-rebinning (required to run pPXF) and median normalization routines. This ensures the best compatibility with the fitting algorithm. GalSpecFitX requires a FITS file containing an Astropy table with ‘wavelength,’ ‘flux,’ and ‘error,’ columns. The galaxy spectrum must be evenly sampled; otherwise, the continuum fit may misalign with the observed spectrum.
+This software prepares a raw galaxy spectrum for spectral fitting by performing optional dereddening, deredshifting, and binning, as well as log-rebinning and median normalization—both required for use with GalSpecFitX—to ensure optimal compatibility with the fitting routine. GalSpecFitX requires a FITS file containing an Astropy table with ‘wavelength,’ ‘flux,’ and ‘error,’ columns. The galaxy spectrum must be evenly sampled; otherwise, the continuum fit may misalign with the observed spectrum.
 
-Please see the example below for instructions on how to use Python to merge multiple spectra and the spectres package to achieve even sampling. The final data are stored in an Astropy table within a single HDU extension of a FITS file.
+Please see the example below for instructions on how to use Python to merge multiple spectra and the `spectres` package to achieve even sampling. The final data are stored in an Astropy table within a single HDU extension of a FITS file.
 
 ```
 from astropy.table import Table
@@ -74,14 +74,14 @@ hdul.writeto('resampled_spectrum.fits', overwrite=True)
 
 ## Configuration File Parameters
 
-The software requires a configuration `.ini` file to run. The configuration file is divided into several sections, each of which contains specific parameters. Below is a breakdown of the required parameters for each section.
+The software requires a configuration `.ini` file to run. The configuration file is divided into several sections, each of which contains specific parameters. Below is a breakdown of the required parameters for each section. The repository includes a template `config.ini` file with all parameters at their default values.
 
 ### 1. Settings Section
 This section contains general settings related to the galaxy data processing.
 
 | Parameter         | Type   | Description                                                                 |
 |-------------------|--------|-----------------------------------------------------------------------------|
-| `galaxy_filename` | string | Name of the galaxy spectrum FITS file.                                           |
+| `galaxy_filename` | string | Name of the galaxy spectrum FITS file (e.g. galaxy_spectrum.fits)                                       |
 | `segment`         | string | FITS HDU extension name corresponding to the data you want to process (e.g 'FULL_SPECTRUM').    |
 | `bin_width`       | int    | Width for binning the galaxy spectrum. 1 performs no binning.     |
 | `default_noise`   | float  | Default noise value for the galaxy spectrum. Default is 1.                  |
@@ -99,7 +99,7 @@ This section contains information about the instrument used for the observations
 | `R`               | float  | Resolving power of the instrument.                                           |
 
 ### 3. Dereddening Section
-This section contains parameters for removing Milky Way foreground from a galaxy spectrum. Dereddening is performed using Python's [dust_extinction](https://dust-extinction.readthedocs.io/en/latest/) package.
+This section contains parameters for removing Milky Way foreground. Dereddening is performed using Python's [dust_extinction](https://dust-extinction.readthedocs.io/en/latest/) package.
 
 | Parameter   | Type   | Description                                                                       |
 |-------------|--------|-----------------------------------------------------------------------------------|
@@ -109,47 +109,46 @@ This section contains parameters for removing Milky Way foreground from a galaxy
 
 
 ### 4. Library Section
-This section defines the stellar population models used for fitting.
+This section allows the user to select and refine the stellar population models used for fitting.
 
 | Parameter   | Type   | Description                                                                       |
 |-------------|--------|-----------------------------------------------------------------------------------|
 | `lib_path`  | str/None | Path to library (e.g. `lib_path=/path/to/full_suite`). `None` defaults to sample_libraries automatically provided.  |
 | `Library`   | string | Name of the library for stellar population templates (`STARBURST99` or `BPASS`).  |
 | `evol_track`| string | Evolutionary track. Only applies to Starburst99 libraries. Default is `geneva_high`. |
-| `IMF`       | string | Initial mass function (IMF) used in the library (See **All Available libraries**).    |
-| `star_form` | string | Star formation model (instantaneous or continuous).                       |
+| `IMF`       | string | Initial mass function (IMF) (See **All Available libraries**).    |
+| `star_form` | string | Star formation model (instantaneous or continuous). Only instantaneous models are available at this time.                       |
 | `star_pop`  | string | Type of stellar population (single or binary).                       |
 | `age_range` | list of float | Age range for stellar templates (in Gyr) (e.g.[0.0, 1.0]).                    |
 | `metal_range`| list of float | Metallicity range for stellar templates (e.g. [0.0, 0.020], Z☉ = 0.020).                   |
 | `norm_range` | list of float | Wavelength range to be used to normalize the stellar templates and galaxy spectrum (in Å). If None provided median normalization of the entire spectrum is performed. |
 
 ### 5. Fit Section
-This section contains additional parameters for customizing the fitting process. These parameters are optional and can vary depending on the user's needs. All available fitting parameters and default values are also listed in the provided `config.ini` template.
+This section lists the fit parameters that must be specified and may vary depending on the user's needs. All available fitting parameters and their default values are also provided in the `config.ini` template.
 
 | **Parameter**         | **Type**        | **Description**                                                                                               |
 |-----------------------|-----------------|---------------------------------------------------------------------------------------------------------------|
-| `start`               | None/list       | Initial kinematic parameters (velocity and sigma required in km/s) for stars. Setting this to None will set V, sigma = [0.0, 3*velocity scale per pixel].|
+| `start`               | None/list       | LOSVD kinematic components (velocity and sigma required in km/s) for stars. Setting this to None will set V, sigma = [0.0, 3*velocity scale per pixel].|
 | `absorp_lam`          | None/list/dict  | The wavelengths of known Milky Way absorption lines to be masked during spectral fitting (see Milky Way Absorption Line Masking section). |
 | `bias`                | float           | Optional bias term to control fit sensitivity; default is None.*                                              |
-| `bounds`              | None/list       | Parameter bounds (e.g., min and max values) for fitting constraints in start; default is None.          |
+| `bounds`              | None/list       | Parameter bounds (e.g., min and max values) for start; default is None. E.g. [[0.0, 100.], [0.0, 40.]] sets min and max bounds for V[0.0, 100.] and sigma[0.0, 40.] during fit. |
 | `clean`               | bool            | Enables outlier removal if True; default is False.                                                            |
-| `constr_templ`        | dict            | Constraints applied to templates during fitting; default is None.*                                             |
-| `constr_kinem`        | dict            | Constraints on kinematic parameters (e.g., velocity); default is None.*                                        |
-| `degree`              | int             | Degree of additive polynomial for continuum fitting; default is 4. Set ``degree=-1`` to not include any additive polynomial.|
-| `dust`                | None/dict       | Dust attenuation parameters for stars; default is None. {"start":..., "bounds":..., "fixed":...}              |
+| `constr_kinem`        | dict            | Linear constraints on the kinematic parameters; default is None.*                                        |
+| `constr_templ`        | dict            | Linear constraints on the template weights; default is None.*                                             |
+| `degree`              | int             | Degree of additive polynomial used to correct the template continuum shape during the fit; default is 4. Set ``degree=-1`` to not include any additive polynomial.|
+| `dust`                | None/dict       | Parameters for the attenuation curve to be applied for stars; default is None. {"start":..., "bounds":..., "fixed":...}              |
 | `fixed`               | None/list       | Boolean vector set to ``True`` where a given kinematic parameter has to be held fixed with the value given in ``start``. This is a list with the same dimensions as ``start``. |
 | `fraction`            | float           | Ratio between stars and gas component.*                                                                        |
 | `ftol`                | float           | Tolerance level for fit convergence; default is 1e-4.                                                         |
-| `global_search`**     | bool or dict    | Enables global optimization of the nonlinear parameters (kinematics) before starting the usual local optimizer.if True; default is False. |
-| `linear`              | bool            | Only performs linear fitting if set to True; default is False.                                                           |
-| `linear_method`       | str             | Method for linear fitting (options vary based on pPXF settings); default is `lsq_box`.                        |
+| `global_search`**     | bool or dict    | Enables global optimization of the nonlinear parameters (kinematics) before starting the usual local optimizer if True; default is False. |
+| `linear`              | bool            | Only performs a linear fit for the templates and additive polynomials weights if set to True; default is False.                                           |
+| `linear_method`       | str             | Method for linear fitting. Options are `nnls`, `lsq_box`, `lsq_lin`, `cvxopt`; default is `lsq_box`.                        |
 | `mask`                | None/list       | List of wavelength ranges to exclude from fit; default is None (e.g. [[lam_i1, lam_f1], [lami2, lamf2], ...]                                              |
-| `method`              | str             | Algorithm to perform the non-linear minimization step (options vary based on pPXF settings); default is `capfit`. |
+| `method`              | str             | Algorithm to perform the non-linear minimization step. Options are `capfit`, `trf`, `dogbox`, `lm`; default is `capfit`. |
 | `mdegree`             | int             | Degree of multiplicative polynomial for continuum fitting; default is 0.                                      |
-| `n_iterations`        | int             | Number of iterations of the fit to perform. Calculates uncertaintaties using Monte Carlo simulations (see Rivera et al. 2025 for more detail).      |
+| `n_iterations`        | int             | Number of iterations of the fit to perform. Calculates uncertaintaties through Monte Carlo perturbations of the observed spectrum.      |
 | `quiet`               | bool            | Suppresses verbose output of the best fitting parameters at the end of the fit if True; default is False.     |
-| `absorp_lam`          | None/list       | Absorption line central wavelengths for milky way line masking; default is None.                              |
-| `sigma_diff`          | float           | Quadratic difference in km/s defined as: ```sigma_diff**2 = sigma_inst**2 - sigma_temp**2``` between the instrumental dispersion of the galaxy spectrum and the instrumental dispersion of the template spectra.                                                |
+| `absorp_lam`          | None/list       | Absorption line central wavelengths for milky way line masking; default is None. Resolving power `R` must be provided in the `Instrument` section.        |
 | `trig`                | bool            | Enables trigonometric series as an alternative to Legendre polynomials, for both the additive and multiplicative polynomials if True; default is False. |
 | `vsyst`               | float           | Reference velocity in ``km/s``; default is 0.0. Output will be w.r.t. this velocity.                                                             |
 | `x0`                  | None            | Initialization for linear solution; default is None.                                                                 |
@@ -169,7 +168,7 @@ If not provided or set to None, no absorption line masking will be applied.
 
 ## Spectral Fitting Parameters - Recommended
 
-These are the parameters I recommend focusing on as they tend to have the greatest influence on the quality of the fit:
+These are the parameters I recommend focusing on as they tend to have the greatest influence on the the fit:
 
 - **start**: Initial guess for the LOSVD parameters (V, sigma, ...) for the stars component.  
 - **Degree**: Degree of the additive Legendre polynomial used to correct the template continuum shape during the fit. Set ``degree=-1`` to not include any additive polynomial.
@@ -183,15 +182,13 @@ After following the installation instructions, you will automatically have acces
 
 - **Starburst99**: Geneva High evolutionary track, Salpeter and Kroupa IMFs for instantaneous, single-star formation models
 
-- **BPASS**: Salpeter IMF (``imf135all_100``) and Kroupa IMF (``imf135_100``) for instantaneous single- and binary-star formation models
-
-The provided config.ini file uses these sample libraries by default by setting the ``lib_path`` parameter to ``None``.
+The provided `config.ini` file uses these sample libraries by default by setting the ``lib_path`` parameter to ``None``.
 
 #### Accessing the Full Suite of Libraries (Using Git LFS)
 
-The full suite of libraries is stored in the ``full_suite`` folder at the root of the repository. Because these files are large (~10 GB), they are managed with Git Large File Storage (Git LFS) and are not downloaded automatically when you first clone the repo.
+The full suite of libraries for Starburst99 and BPASS is stored in the ``full_suite`` folder at the root of the repository. Because these files are large (~10 GB), they are managed with Git Large File Storage (Git LFS). If you have Git LFS installed prior to cloning the repository and want to avoid automatically downloading the data during cloning, you can use the command `GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/starivera/GalSpecFitX.git`. Without Git LFS installed beforehand or if you use `GIT_LFS_SKIP_SMUDGE=1`, the `full_suite/` directory will contain only pointer files until you explicitly fetch the full data using Git LFS.
 
-**To download and use the full suite, follow these steps:**
+**To download and use the full suite after cloning the repo follow these steps:**
 
 **1. Install Git LFS**
 
