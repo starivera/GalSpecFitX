@@ -78,7 +78,7 @@ Figure 1 outlines the key responsibilities of each script, along with associated
 
 ## Template Retrieval
 
-`GalSpecFitX` includes access to sample spectral templates for both `Starburst99` and `BPASS`, with full libraries obtainable via Git Large File Storage (LFS). Templates are converted to FITS format with filenames encoding the Initial Mass Function (IMF), metallicity, and age of each model (see the README for details).
+`GalSpecFitX` includes access to sample spectral templates for `Starburst99`, with full libraries obtainable via Git Large File Storage (LFS). Templates are converted to FITS format with filenames encoding the Initial Mass Function (IMF), metallicity, and age of each model (see the README for details).
 
 Example filename conventions:
 
