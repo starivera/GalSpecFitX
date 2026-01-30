@@ -252,9 +252,9 @@ For further explanation of these choices see: https://massivestars.stsci.edu/sta
 
 For BPASS:
 
-| **Star Formation (`star_form`)** | **Initial Mass Function (`IMF`)** | **Upper Mass Limit (`upper_mass`)** |
-|----------------------------------|-----------------------------------|-----------------------------------|
-| `single`<br> `binary`            | `100`<br> `135`<br> `135all`<br> `170`<br> `chab`<br>  | 100<br> 300 <br> |
+| **Star Formation (`star_form`)** | **Star Population (`star_pop`)** | **Initial Mass Function (`IMF`)** | **Upper Mass Limit (`upper_mass`)** |
+|----------------------------------|----------------------------------|-----------------------------------|-----------------------------------|
+| `inst` -> Instantaneous          | `single`<br> `binary`            | `100`<br> `135`<br> `135all`<br> `170`<br> `chab`<br>  | 100<br> 300 <br> |
 For further explanation of these models see page 7 of the BPASSv2.2.1 [manual](https://warwick.ac.uk/fac/sci/physics/research/astro/research/catalogues/bpass/v2p2/bpassv2.2_manual-arial.pdf).
 
 ## <u>Output</u>
