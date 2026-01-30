@@ -242,19 +242,19 @@ A full suite of Starburst99 and BPASS are currently available, and are provided 
 
 For Starburst99:
 
-| **Evolutionary Track (`evol_track`)**                | **Star Formation (`star_form`)** | **Initial Mass Function (`IMF`)** | **Upper Mass Limit (`upper_mass`)** |
-|------------------------------------------------------|----------------------------------|-----------------------------------|-----------------------------------|
-| `padova_std` -> selection of the 1992 - 1994 Padova tracks.         | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       | 100 |
-| `padova_agb` -> selection of the 1992 - 1994 Padova tracks with thermally pulsing AGB stars added.          | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>   | 100 |
-| `geneva_std` -> selection of the 1994 Geneva tracks with "standard" mass-loss rates.   | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       | 100 |
-| `geneva_high` -> Geneva tracks with high mass-loss rates.  | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       | 100 |
+| **Evolutionary Track (`evol_track`)** | **Star Formation (`star_form`)** | **Initial Mass Function (`IMF`)** | **Upper Mass Limit (`upper_mass`)** |
+|---------------------------------------|----------------------------------|-----------------------------------|-----------------------------------------|
+| `padova_std` -> selection of the 1992 - 1994 Padova tracks.                                        | `instantaneous` | `salpeter`<br> `kroupa`<br>   | 100 |
+| `padova_agb` -> selection of the 1992 - 1994 Padova tracks with thermally pulsing AGB stars added. | `instantaneous` | `salpeter`<br> `kroupa`<br>   | 100 |
+| `geneva_std` -> selection of the 1994 Geneva tracks with "standard" mass-loss rates.               | `instantaneous` | `salpeter`<br> `kroupa`<br>   | 100 |
+| `geneva_high` -> Geneva tracks with high mass-loss rates.                                          | `instantaneous` | `salpeter`<br> `kroupa`<br>   | 100 |
 For further explanation of these choices see: https://massivestars.stsci.edu/starburst99/docs/run.html#IZ
 
 For BPASS:
 
 | **Star Formation (`star_form`)** | **Star Population (`star_pop`)** | **Initial Mass Function (`IMF`)** | **Upper Mass Limit (`upper_mass`)** |
-|----------------------------------|----------------------------------|-----------------------------------|-----------------------------------|
-| `inst` -> Instantaneous          | `single`<br> `binary`            | `100`<br> `135`<br> `135all`<br> `170`<br> `chab`<br>  | 100<br> 300 <br> |
+|----------------------------------|----------------------------------|-----------------------------------|----------------------------------------|
+| `instantaneous`                  | `single`<br> `binary`            | `100`<br> `135`<br> `135all`<br> `170`<br> `chab`<br> | 100<br> 300 <br> |
 For further explanation of these models see page 7 of the BPASSv2.2.1 [manual](https://warwick.ac.uk/fac/sci/physics/research/astro/research/catalogues/bpass/v2p2/bpassv2.2_manual-arial.pdf).
 
 ## <u>Output</u>
