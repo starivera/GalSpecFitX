@@ -74,7 +74,7 @@ hdul.writeto('resampled_spectrum.fits', overwrite=True)
 
 ## Configuration File Parameters
 
-The software requires a configuration `.ini` file to run. The configuration file is divided into several sections, each of which contains specific parameters. Below is a breakdown of the required parameters for each section. The repository includes a template `config.ini` file with all parameters at their default values.
+The software requires a configuration `.ini` file to run. The configuration file is divided into several sections, each of which contains specific parameters. Below is a breakdown of the required parameters for each section. The repository includes a template `config.ini` file with all parameters set to their default values.
 
 ### 1. Settings Section
 This section contains general settings related to the galaxy data processing.
@@ -117,6 +117,7 @@ This section allows the user to select and refine the stellar population models 
 | `Library`   | string | Name of the library for stellar population templates (`STARBURST99` or `BPASS`).  |
 | `evol_track`| string | Evolutionary track. Only applies to Starburst99 libraries. Default is `geneva_high`. |
 | `IMF`       | string | Initial mass function (IMF) (See **All Available libraries**).    |
+| `upper_mass`| int | Upper limit on the stellar mass distribution (100, or 300).    |
 | `star_form` | string | Star formation model (instantaneous or continuous). Only instantaneous models are available at this time.                       |
 | `star_pop`  | string | Type of stellar population (single or binary).                       |
 | `age_range` | list of float | Age range for stellar templates (in Gyr) (e.g.[0.0, 1.0]).                    |
@@ -186,7 +187,7 @@ The provided `config.ini` file uses these sample libraries by default by setting
 
 #### Accessing the Full Suite of Libraries (Using Git LFS)
 
-The full suite of libraries for Starburst99 and BPASS is stored in the ``full_suite`` folder at the root of the repository. Because these files are large (~10 GB), they are managed with Git Large File Storage (Git LFS). If you have Git LFS installed prior to cloning the repository and want to avoid automatically downloading the data during cloning, you can use the command `GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/starivera/GalSpecFitX.git`. Without Git LFS installed beforehand or if you use `GIT_LFS_SKIP_SMUDGE=1`, the `full_suite/` directory will contain only pointer files until you explicitly fetch the full data using Git LFS.
+The full suite of libraries for Starburst99 and BPASS is stored in the ``full_suite`` folder at the root of the repository. Because these files are large (~10 GB is the current total size of the full suite library), they are managed with Git Large File Storage (Git LFS). If you have Git LFS installed prior to cloning the repository and want to avoid automatically downloading the data during cloning, you can use the command `GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/starivera/GalSpecFitX.git`. If you don't have Git LFS installed beforehand or if you use `GIT_LFS_SKIP_SMUDGE=1`, the data in the `full_suite/` directory within your local clone will be replaced with small pointer files until you explicitly fetch the full data using Git LFS.
 
 **To download and use the full suite after cloning the repo follow these steps:**
 
@@ -210,14 +211,14 @@ git lfs install
 Navigate to the root of your cloned repository (where the ``full_suite`` folder is located) and run:
  ```
  git lfs pull
-``` 
-This will download all the large model files.
+```
+This will download all the large model files. You can also choose specific files and folders to download by adding the `--include` or `--exclude` tag.
 
-***Note:** The full suite of libraries is large (~10 GB). Make sure you have enough free disk space.
+***Note:** The full suite of libraries is large (~10 GB). Make sure you have enough free disk space where you have your local clone.
 
 **4. (Optional) Move the ``full_suite`` folder**
 
-If you want to store the libraries in a different location with more disk space, you can move the entire ``full_suite`` folder. Just remember to update your ``config.ini`` accordingly (see step 5).
+If you want to store the libraries in a different location with more disk space, you can move the entire ``full_suite`` folder. You must have run `git lfs pull` prior to doing this, so you must still ensure you have enough disk space where the clone is originally located. Just remember to update your ``config.ini`` accordingly (see step 5).
 
 **5. Update your configuration to use the full suite**
 
@@ -241,22 +242,20 @@ A full suite of Starburst99 and BPASS are currently available, and are provided 
 
 For Starburst99:
 
-| **Evolutionary Track (`evol_track`)**                | **Star Formation (`star_form`)** | **Initial Mass Function (`IMF`)** |
-|------------------------------------------------------|----------------------------------|-----------------------------------|
-| `padova_std` -> selection of the 1992 - 1994 Padova tracks.         | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       |
-| `padova_agb` -> selection of the 1992 - 1994 Padova tracks with thermally pulsing AGB stars added.          | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>   |
-| `geneva_std` -> selection of the 1994 Geneva tracks with "standard" mass-loss rates.   | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       |
-| `geneva_high` -> Geneva tracks with high mass-loss rates.  | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       |
-**Note:** All upper mass cut-offs are 100 M☉
+| **Evolutionary Track (`evol_track`)**                | **Star Formation (`star_form`)** | **Initial Mass Function (`IMF`)** | **Upper Mass Limit (`upper_mass`)** |
+|------------------------------------------------------|----------------------------------|-----------------------------------|-----------------------------------|
+| `padova_std` -> selection of the 1992 - 1994 Padova tracks.         | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       | 100 |
+| `padova_agb` -> selection of the 1992 - 1994 Padova tracks with thermally pulsing AGB stars added.          | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>   | 100 |
+| `geneva_std` -> selection of the 1994 Geneva tracks with "standard" mass-loss rates.   | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       | 100 |
+| `geneva_high` -> Geneva tracks with high mass-loss rates.  | `inst` -> Instantaneous          | `salpeter`<br> `kroupa`<br>       | 100 |
 For further explanation of these choices see: https://massivestars.stsci.edu/starburst99/docs/run.html#IZ
 
 For BPASS:
 
-| **Star Formation (`star_form`)** | **Initial Mass Function (`IMF`)** |
-|----------------------------------|-----------------------------------|
-| `single`<br> `binary`            | `imf_chab100`<br> `imf_chab300`<br> `imf100_100`<br> `imf100_300`<br> `imf135_100`<br>  `imf135_300`<br> `imf135all_100`<br> `imf170_100`<br> `imf170_300`<br> |
-**Note:** The suffix _100 indicates an upper mass cutoff of 100 M☉, while _300 represents an upper mass cutoff of 300 M☉
-For further explanation of these choices see the BPASS [manual](https://livewarwickac.sharepoint.com/sites/Physics-BinaryPopulationandSpectralSynthesisBPASS/Shared%20Documents/Forms/AllItems.aspx?ga=1&id=%2Fsites%2FPhysics%2DBinaryPopulationandSpectralSynthesisBPASS%2FShared%20Documents%2FBPASS%5Fv2%2E2%5Frelease%2FBPASS%20v2%2E2%2E1%20full%20release%2FBPASSv2%2E2%2E1%5FManual%2Epdf&viewid=141639b8%2D0962%2D4a5a%2Db1e4%2D8977a94c88eb&parent=%2Fsites%2FPhysics%2DBinaryPopulationandSpectralSynthesisBPASS%2FShared%20Documents%2FBPASS%5Fv2%2E2%5Frelease%2FBPASS%20v2%2E2%2E1%20full%20release).
+| **Star Formation (`star_form`)** | **Initial Mass Function (`IMF`)** | **Upper Mass Limit (`upper_mass`)** |
+|----------------------------------|-----------------------------------|-----------------------------------|
+| `single`<br> `binary`            | `100`<br> `135`<br> `135all`<br> `170`<br> `chab`<br>  | 100<br> 300 <br> |
+For further explanation of these models see page 7 of the BPASSv2.2.1 [manual](https://warwick.ac.uk/fac/sci/physics/research/astro/research/catalogues/bpass/v2p2/bpassv2.2_manual-arial.pdf).
 
 ## <u>Output</u>
 

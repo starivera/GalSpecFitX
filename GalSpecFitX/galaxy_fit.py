@@ -21,10 +21,20 @@ import plotly.graph_objects as go
 from multiprocessing import Pool
 
 from ppxf.ppxf import ppxf
-import GalSpecFitX.sps_util as lib
 
 # Constants
 SPEED_OF_LIGHT = 299792.458  # Speed of light in km/s
+_GLOBALS = {}
+
+def _init_worker(templates, gal_flux, gal_err, gal_lam, lam_temp, reg_dim, library, kwargs):
+    _GLOBALS['templates'] = templates
+    _GLOBALS['gal_flux'] = gal_flux
+    _GLOBALS['gal_err'] = gal_err
+    _GLOBALS['gal_lam'] = gal_lam
+    _GLOBALS['lam_temp'] = lam_temp
+    _GLOBALS['reg_dim'] = reg_dim
+    _GLOBALS['library'] = library
+    _GLOBALS['kwargs'] = kwargs
 
 def reddy_attenuation(lam, a_v, delta=None, f_nodust=None, uv_bump=None):
     """
@@ -146,100 +156,16 @@ class LibraryHandler(ABC):
         """
         pass
 
-class Starburst99LibraryHandler(LibraryHandler):
-    """
-    Handler for Starburst99 stellar population models. This handler is used to retrieve
-    templates from the Starburst99 library based on the specified parameters.
+class LibraryFactoryMixin:
+    name: str
 
-    References
-    ----------
-    Leitherer et al. (1999), ApJS, 123, 3
-    Vázquez & Leitherer (2005), ApJ, 621, 695
-    Leitherer et al. (2010), ApJS, 189, 309
-    Leitherer et al. (2014)
-    """
+    @classmethod
+    def validate_config(cls, cfg):
+        raise NotImplementedError
 
-    def __init__(self, IMF_slope: str, star_form: str, star_pop: str, lib_path: str, evol_track: str):
-        """
-        Initialize the handler with the necessary parameters for the Starburst99 library.
-
-        :param IMF_slope: Initial Mass Function (IMF) slope for the Starburst99 templates.
-        :param star_form: Star formation scenario (e.g., instantaneous, continuous).
-        :param star_pop: Star population scenario (e.g., single, binary).
-        :param lib_path: Path to the base directory of the Starburst99 library.
-        :param evol_track: Evolutionary track to be used for the Starburst99 models.
-        """
-        self.IMF_slope = IMF_slope
-        self.star_form = star_form
-        self.star_pop = star_pop
-        self.lib_path = lib_path
-        self.evol_track = evol_track
-
-
-    def retrieve_templates(self, velscale: float, age_range: List[float], metal_range: List[float], norm_range:List[float], FWHM_gal: float) -> any:
-        """
-        Retrieve the Starburst99 templates based on the specified parameters.
-
-        :param velscale: Velocity scale per pixel in km/s.
-        :param age_range: List of two floats representing the age range in Gyr for the templates to be retrieved `[age_min, age_max]`.
-        :param metal_range: List of two floats representing the metallicity range for the templates to be retrieved `[metal_min, metal_max]` (e.g., 0.020 = Z☉).
-        :param norm_range: List of two floats representing the wavelength range in Angstroms within which to compute the templates' normalization `[norm_min, norm_max]`.
-        :param FWHM_gal: Full Width at Half Maximum (FWHM) of the galaxy's spectral line spread, in km/s.
-
-        :return: The retrieved Starburst99 templates.
-        """
-        pathname = os.path.join(self.lib_path, 'STARBURST99', self.evol_track, self.star_form, self.star_pop, self.IMF_slope, '*.fits')
-        lam = glob.glob(os.path.join(self.lib_path, "STARBURST99", self.evol_track, "*lam.fits"))[0]
-
-        starburst99_lib = lib.SPSLibrary(pathname, lam, velscale, FWHM_gal=FWHM_gal, FWHM_tem=0.4, age_range=age_range, metal_range=metal_range, norm_range=norm_range)
-
-        return starburst99_lib
-
-class BPASSLibraryHandler(LibraryHandler):
-    """
-    Handler for BPASS (Binary Population and Spectral Synthesis) stellar population models.
-    This handler retrieves templates from the BPASS library based on the specified parameters.
-
-    References
-    ----------
-    - Eldridge, J.J., Stanway, E.R., Xiao, L., et al. (2017), "BPASS: Binary Population and Spectral Synthesis", PASA, 34, e058.
-    - Stanway, E.R., & Eldridge, J.J. (2018), "Reevaluating old stellar populations", MNRAS, 479, 75.
-    - BPASS project website: https://bpass.auckland.ac.nz
-    """
-
-    def __init__(self, IMF_slope: str, star_form: str, star_pop: str, lib_path: str):
-        """
-        Initialize the handler with the necessary parameters for the BPASS library.
-
-        :param IMF_slope: Initial Mass Function (IMF) slope for the BPASS templates.
-        :param star_form: Star formation scenario (e.g., single, binary).
-        :param star_pop: Star population scenario (e.g., single, binary).
-        :param lib_path: Path to the base directory of the BPASS library.
-        """
-        self.lib = lib
-        self.IMF_slope = IMF_slope
-        self.star_form = star_form
-        self.star_pop = star_pop
-        self.lib_path = lib_path
-
-    def retrieve_templates(self, velscale: float, age_range: List[float], metal_range: List[float], norm_range: List[float], FWHM_gal: float) -> any:
-        """
-        Retrieve the BPASS templates based on the specified parameters.
-
-        :param velscale: Velocity scale per pixel in km/s.
-        :param age_range: List of two floats representing the age range in Gyr for the templates to be retrieved `[age_min, age_max]`.
-        :param metal_range: List of two floats representing the metallicity range for the templates to be retrieved `[metal_min, metal_max]` (e.g., 0.020 = Z☉).
-        :param norm_range: List of two floats representing the wavelength range in Angstroms within which to compute the templates' normalization `[norm_min, norm_max]`.
-        :param FWHM_gal: Full Width at Half Maximum (FWHM) of the galaxy's spectral line spread, in km/s.
-
-        :return: The retrieved BPASS templates.
-        """
-        pathname = os.path.join(self.lib_path, 'BPASS', self.star_form, self.star_pop, self.IMF_slope, '*.fits')
-        lam = glob.glob(os.path.join(self.lib_path, "BPASS", "*lam.fits"))[0]
-
-        bpass_lib = lib.SPSLibrary(pathname, lam, velscale, FWHM_gal=FWHM_gal, FWHM_tem=1.0, age_range=age_range, metal_range=metal_range, norm_range=norm_range)
-
-        return bpass_lib
+    @classmethod
+    def from_config(cls, cfg, lib_path):
+        raise NotImplementedError
 
 
 class TemplateRetrieval:
@@ -385,22 +311,24 @@ class TemplateRetrieval:
         library.plot(light_weights, config_filename, output_path, std_ages, std_metallicities, a_v, std_A_v)
 
     @staticmethod
-    def _single_iteration(i, templates, gal_flux, gal_err, velscale, start, dust,
-                          moments, gal_lam, lam_temp, reg_dim, library, kwargs):
-        """Run one Monte Carlo iteration."""
-        simulated_flux = gal_flux + np.random.normal(0, gal_err)
+    def _single_iteration(i, velscale, start, dust, moments):
+        g = _GLOBALS
+        simulated_flux = g['gal_flux'] + np.random.normal(0, g['gal_err'])
+
         try:
             pp_sim = ppxf(
-                templates, simulated_flux, gal_err, velscale, start,
-                dust=dust, moments=moments, lam=gal_lam, lam_temp=lam_temp,
-                reg_dim=reg_dim, **kwargs
+                g['templates'], simulated_flux, g['gal_err'],
+                velscale, start, dust=dust, moments=moments,
+                lam=g['gal_lam'], lam_temp=g['lam_temp'],
+                reg_dim=g['reg_dim'], **g['kwargs']
             )
 
-            light_weights_sim = pp_sim.weights.reshape(reg_dim)
+            light_weights_sim = pp_sim.weights.reshape(g['reg_dim'])
             light_weights_sim /= light_weights_sim.sum()
 
-            mean_age, mean_z = library.plot(light_weights_sim, plot=False)
+            mean_age, mean_z = g['library'].plot(light_weights_sim, plot=False)
             A_v = pp_sim.dust[0]['sol'][0] if pp_sim.dust is not None else 0.0
+
             return mean_age, mean_z, A_v
 
         except (ValueError, AssertionError):
@@ -416,14 +344,15 @@ class TemplateRetrieval:
 
         n_processes = max(1, os.cpu_count() - 1)
 
-        args = [
-            (i, templates, gal_flux, gal_err, velscale, start, dust, moments,
-             gal_lam, lam_temp, reg_dim, library, kwargs)
-            for i in range(n_iterations)
-        ]
-
-        with Pool(processes=n_processes) as pool:
-            results = pool.starmap(self._single_iteration, args)
+        with Pool(
+            processes=n_processes,
+            initializer=_init_worker,
+            initargs=(templates, gal_flux, gal_err, gal_lam, lam_temp, reg_dim, library, kwargs)
+        ) as pool:
+            results = pool.starmap(
+                self._single_iteration,
+                [(i, velscale, start, dust, moments) for i in range(n_iterations)]
+            )
 
         # Filter out failed runs
         results = [r for r in results if r is not None]

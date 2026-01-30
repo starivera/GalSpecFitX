@@ -6,10 +6,10 @@ import argparse
 import logging
 import configparser
 from pathlib import Path
-import contextlib
-import matplotlib.pyplot as plt
-import plotly.io as pio
-import numpy as np
+
+from GalSpecFitX.library_registry import LIBRARY_REGISTRY
+from GalSpecFitX.starburst99_handler import Starburst99LibraryHandler
+from GalSpecFitX.bpass_handler import BPASSLibraryHandler
 
 from GalSpecFitX.galaxy_preprocess import (
     GalaxySpectrum,
@@ -20,11 +20,9 @@ from GalSpecFitX.galaxy_preprocess import (
     NormalizationOperation,
     ProcessedGalaxySpectrum,
 )
-from GalSpecFitX.combine_and_fit import (
+from GalSpecFitX.galaxy_fit import (
     SpectrumProcessor,
     InstrumentInfo,
-    Starburst99LibraryHandler,
-    BPASSLibraryHandler,
 )
 
 # -----------------------------------------------------------------------------
@@ -40,7 +38,7 @@ def read_config(filename: str, input_path: Path) -> configparser.ConfigParser:
     config = configparser.ConfigParser()
     config.read(config_file)
 
-    required_sections = ["Settings", "Instrument", "Library", "Fit"]
+    required_sections = ["Settings", "Instrument", "Dereddening", "Library", "Fit"]
     missing = [s for s in required_sections if s not in config]
     if missing:
         raise KeyError(f"Missing required sections: {', '.join(missing)}")
@@ -169,20 +167,22 @@ def main() -> None:
     lib_path = get_optional(library, "lib_path", default=None, convert=str)
     lib_path = Path(lib_path or Path(__file__).parent / "sample_libraries")
 
-    library_name = library["Library"].upper()
-    if library_name not in {"STARBURST99", "BPASS"}:
-        raise ValueError(f"Unsupported library: {library_name}")
-
-    evol_track = get_optional(library, "evol_track", default=None, convert=str)
-    if evol_track is None and library_name == "STARBURST99":
-        evol_track = "geneva_high"
-
-    imf = library["IMF"].lower()
-    star_form = library["star_form"].lower()
-    star_pop = library["star_pop"].lower()
     age_range = ast.literal_eval(library["age_range"])
     metal_range = ast.literal_eval(library["metal_range"])
     norm_range = ast.literal_eval(library["norm_range"])
+
+    library_name = library["library"].upper()
+
+    try:
+        handler_cls = LIBRARY_REGISTRY[library_name]
+    except KeyError:
+        raise ValueError(
+            f"Unsupported library '{library_name}'. "
+            f"Available libraries: {list(LIBRARY_REGISTRY)}"
+        )
+
+    handler_cls.validate_config(library)
+    lib_handler = handler_cls.from_config(library, lib_path)
 
     # --- Fit parameters ---
     processor_config = {
@@ -242,11 +242,6 @@ def main() -> None:
         if R is None:
             raise ValueError("Must provide resolving power 'R' to use spectral line masking.")
         processor_config["mask"] = processor.mask_spectral_lines(R)
-
-    if library_name == "STARBURST99":
-        lib_handler = Starburst99LibraryHandler(imf, star_form, star_pop, str(lib_path), evol_track)
-    else:
-        lib_handler = BPASSLibraryHandler(imf, star_form, star_pop, str(lib_path))
 
     # --- Execute fitting with redirected stdout and stderr ---
     with Logger(log_filename) as logger:

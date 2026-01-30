@@ -51,12 +51,12 @@ def minimal_config(tmp_run: Path, example_spectrum_fits: Path) -> Path:
     galaxy_filename = {example_spectrum_fits.name}
     segment = FULL_SPECTRUM
     bin_width = 1
-    default_noise = 0.05
+    default_noise = 1.0
     z_guess = 0.0
 
     [Instrument]
     # Keep it simple: give an FWHM (Å) directly
-    FWHM_gal = 1.0
+    FWHM_gal = 0.4
 
     [Dereddening]
     ebv = 0.0
@@ -65,14 +65,14 @@ def minimal_config(tmp_run: Path, example_spectrum_fits: Path) -> Path:
 
     [Library]
     lib_path = None
-    Library = STARBURST99
+    library = STARBURST99
     evol_track = geneva_high
     IMF = salpeter
+    upper_mass = 100
     star_form = instantaneous
     star_pop = single
-    age_range = [0.0, 0.02]
-    metal_range = [0.0, 0.02]
-    # use entire range for normalization (small file anyway)
+    age_range = None
+    metal_range = None
     norm_range = None
 
     [Fit]
