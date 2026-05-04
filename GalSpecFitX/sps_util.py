@@ -411,7 +411,7 @@ class SPSLibrary:
                     width=(np.max(unique_ages) - np.min(unique_ages)) / len(unique_ages) * 0.8,
                     color=colors[i],
                     bottom=bottoms,
-                    label=f"{unique_metals[i]/z_sol:.2f} * Z☉"
+                    label=f"{unique_metals[i]/z_sol} * Z☉"
                 )
                 bottoms += weight_for_metal
 
