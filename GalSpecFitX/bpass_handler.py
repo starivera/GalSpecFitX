@@ -68,7 +68,7 @@ class BPASSLibraryHandler(LibraryHandler, LibraryFactoryMixin):
             "BPASS",
             self.star_form,
             self.star_pop,
-            "imf_"+self.IMF_slope,
+            "imf"+self.IMF_slope,
             self.upper_mass,
             "*.fits",
         )

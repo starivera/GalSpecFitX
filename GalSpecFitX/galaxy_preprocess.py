@@ -10,6 +10,8 @@ from typing import Protocol, Tuple, List
 import configparser
 
 import numpy as np
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import plotly.tools as tls
 import plotly.io as pio

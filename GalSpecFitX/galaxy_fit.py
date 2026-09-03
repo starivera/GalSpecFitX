@@ -12,6 +12,8 @@ from abc import ABC, abstractmethod
 from typing import List, Tuple, Optional, Dict
 
 import numpy as np
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from astropy.io import fits
 from astropy.table import Table
